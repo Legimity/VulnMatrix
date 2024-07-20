@@ -1,9 +1,18 @@
 # VulnMatrix
-A Cybersecurity Testing and Verification Range Platform
+* A Cybersecurity Testing and Verification Range Platform
 
 * 一个Web靶场平台，可以导入各种Docker漏洞场景和Ctf场景。可以用来部署在私人、公有网络中，以供练习使用。
-* 突然发现，写说明书才是最难的！！！
 
+核心功能设计：
+
+1. 根据docker-compose，生成靶场
+
+2. 点击生成的靶场弹出新的页面，具有两个视角：
+
+   - 攻击者视角：有一个shell和工具箱；
+   - 防御者视角：有目标网络的拓扑……
+
+3. 用户管理
 
 # 鸣谢
 * 先感谢伟大的开源社区，让这个小网站可以顺利完成。

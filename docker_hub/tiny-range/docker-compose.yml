@@ -1,0 +1,51 @@
+version: '3.8'
+
+networks:
+  network1:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+  network2:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.26.0.0/16
+
+services:
+  app1:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    networks:
+      network1:
+        aliases:
+          - app1
+        ipv4_address: 172.25.0.10
+      network2:
+        aliases:
+          - app1-net2
+        ipv4_address: 172.26.0.10
+    environment:
+      - NGINX_HOST=app1
+      - NGINX_PORT=80
+    volumes:
+      - app1-data:/usr/share/nginx/html
+
+  app2:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      network2:
+        aliases:
+          - app2
+        ipv4_address: 172.26.0.11
+    environment:
+      - REDIS_PASSWORD=secret
+    volumes:
+      - app2-data:/data
+
+volumes:
+  app1-data:
+  app2-data:

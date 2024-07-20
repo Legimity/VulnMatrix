@@ -22,15 +22,20 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 
-from docker_lib import Dockers_Start, Dockers_Stop, Dockers_Info
+# from docker_lib import Dockers_Start, Dockers_Stop, Dockers_Info
+from docker_lib import Dockers_Start, Dockers_Stop, Dockers_Info,Docker_ComposeControl
 from system_info import Start_Get_Sysinfo
 from log.logger import logger
 from tornado.options import define, options
+import dotenv
+dotenv.load_dotenv()
+print(os.getenv("PROJECT_PATH"))
 
 try:
     from Queue import Queue
 except ImportError as e:
     from queue import Queue
+
 que = Queue()
 page_size = 30
 Mem_Limit = '30M'
@@ -73,7 +78,17 @@ class Application(tornado.web.Application):
             (r"/change_pass", Change_Pass_Handler),
             (r"/add_user", Add_User_Handler),
 
+            # 测试上传文件接口
+            (r"/upload", UploadHandler),
+            # 测试
+            (r"/boot_docker_compose", DockerComposeControlHandler),
+            
+
+            
+
             (r".*", ErrorHandler),
+
+            
         ]
         # 初始化tornado的设置
         settings = dict(
@@ -90,6 +105,7 @@ class Application(tornado.web.Application):
         logger.info('初始化tornado对象,初始化路由')
         self.db = sqlite3.connect(options.sqlite_path, check_same_thread = False)
         self.db.row_factory = self.__dict_factory
+        # print("self.db.row_factory",self.db.row_factory)
         logger.info('链接数据库')
         threading.Thread(target = Start_Get_Sysinfo, args = (que,)).start()
         logger.info('开启后台监控进程')
@@ -174,6 +190,54 @@ class ErrorHandler(BaseHandler):
     '''
     def get(self):
         self.render('404.html')
+
+
+# 测试上传文件接口
+class UploadHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        self.render('upload.html')
+        
+    def post(self):
+        # 获取上传的文件
+        file1 = self.request.files['file1'][0]
+        filename = file1['filename']
+        body = file1['body']
+
+        # 检查文件后缀是否为 yml
+        if not filename.endswith('.yml'):
+            self.write("Only .yml files are allowed.")
+            return
+
+        # 存储文件到固定文件夹
+        output_path = os.path.join("./files", filename)
+        with open(output_path, 'wb') as f:
+            f.write(body)
+        
+        self.write(f"File {filename} is uploaded successfully.")
+
+#
+# 根据上传的docker-compose.yml文件，启动docker-compose
+class DockerComposeControlHandler(tornado.web.RequestHandler):
+    def post(self):
+        data = tornado.escape.json_decode(self.request.body)
+        if data.get('action') == 'trigger':
+            network_info=self.docker_compose_up()
+            logger.info(network_info)
+            self.write("DockerComposeControlHandler triggered successfully.")
+        else:
+            self.write("Invalid action.")
+
+    def docker_compose_up(self):
+        # 启动靶场
+        logger.info("Function docker_compose_up has been triggered!")
+
+        # TODO：path不应该写死，应该根据id启动对应的靶场
+        docker_compose_path=os.path.join(os.path.dirname(__file__), "docker_hub","CFS-Docker","docker-compose.yml")
+        # docker_compose_path=os.path.join(os.path.dirname(__file__), "files","docker-compose.yml")
+        network_info=Docker_ComposeControl.run(docker_compose_path)
+        return network_info
+
 
 
 class LoginHandler(BaseHandler):

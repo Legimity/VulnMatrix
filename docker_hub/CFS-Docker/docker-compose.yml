@@ -1,0 +1,75 @@
+version: '3'
+services:
+  shiro:
+    image: vulhub/shiro:1.2.4
+    container_name: "shiro-CVE-2016-4437"
+    ports:
+      - "8001:8080"
+    environment:
+      - FLAG=${flag1}
+    restart: always
+    networks:
+      net1:
+          ipv4_address: 172.16.238.10 
+
+  tomcat:
+    image: vulhub/tomcat:8.0
+    container_name: "tomcat8-weakpassword"
+    volumes:
+      - ${PROJECT_PATH}/docker_hub/CFS-Docker/tomcat8/tomcat-users.xml:/usr/local/tomcat/conf/tomcat-users.xml
+      - ${PROJECT_PATH}/docker_hub/CFS-Docker/tomcat8/context.xml:/usr/local/tomcat/webapps/manager/META-INF/context.xml
+      - ${PROJECT_PATH}/docker_hub/CFS-Docker/tomcat8/context.xml:/usr/local/tomcat/webapps/host-manager/META-INF/context.xml
+    expose:
+      - "8080"
+    environment:
+      - FLAG=${flag2}
+    restart: always
+    networks:
+      net1:
+          ipv4_address: 172.16.238.81
+      net2:
+          ipv4_address: 10.10.5.6
+
+  weblogic:
+    image: vulhub/weblogic:10.3.6.0-2017
+    container_name: "weblogic-weakpassword"
+    volumes:
+      - ${PROJECT_PATH}/docker_hub/CFS-Docker/weblogic/web:/root/Oracle/Middleware/user_projects/domains/base_domain/autodeploy
+    expose:
+      - "7001"
+      - "5556"
+    environment:
+      - FLAG=${flag3}
+    restart: always
+    networks:
+      net2:
+          ipv4_address: 10.10.5.88
+      net3:
+          ipv4_address: 172.42.66.10
+
+  jboss:
+    image: vulhub/jboss:as-6.1.0
+    container_name: "jboss-CVE-2017-12149"
+    expose:
+      - "9990"
+      - "8080"
+    environment:
+      - FLAG=${flag4}
+    restart: always
+    networks:
+      net3:
+          ipv4_address: 172.42.66.77
+
+networks:
+  net1:
+    ipam:
+      config:
+        - subnet: "172.16.0.0/16"
+  net2:
+    ipam:
+      config:
+        - subnet: "10.10.5.0/24"
+  net3:
+    ipam:
+      config:
+        - subnet: "172.42.66.0/24"

@@ -6,6 +6,7 @@ from log.logger import logger
 from docker_lib.docker_add import Dokcers_Add
 from docker_lib.docker_del import Dokcers_Del
 from docker_lib.docker_get import Dokcers_Get
+from docker_lib.docker_compose_control import DockerComposeControl
 
 try:
     client = docker.from_env()
@@ -19,3 +20,4 @@ Dockers_Start = Dokcers_Add(client)
 Dockers_Stop = Dokcers_Del(client)
 Dockers_Info = Dokcers_Get(client)
 
+Docker_ComposeControl=DockerComposeControl(client)
