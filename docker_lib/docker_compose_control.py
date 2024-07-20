@@ -1,6 +1,6 @@
 #! coding=utf-8
 # 初始化docker模块，直接提供三个控制借口，可以直接操作docker镜像和容器。
-import docker
+# import docker
 
 # from log.logger import logger
 # from docker_lib.docker_add import Dokcers_Add
@@ -27,6 +27,11 @@ import docker
 import docker
 import yaml
 from docker.errors import ImageNotFound, NotFound, APIError
+from dotenv import load_dotenv
+# import os
+
+# Load environment variables from .env file
+load_dotenv()
 
 def load_compose_file(file_path):
     with open(file_path, 'r') as file:
@@ -67,7 +72,18 @@ def create_networks(client, networks):
     created_networks = {}
     for network_name, network_details in networks.items():
         remove_existing_network(client, network_name)
-        network = client.networks.create(network_name, driver=network_details.get('driver', 'bridge'), ipam=network_details.get('ipam'))
+        ipam_config = network_details.get('ipam', {}).get('config', [])
+        ipam_pool = docker.types.IPAMConfig(pool_configs=[
+            docker.types.IPAMPool(
+                subnet=config.get('subnet'),
+                iprange=config.get('ip_range')
+            ) for config in ipam_config
+        ])
+        network = client.networks.create(
+            network_name,
+            driver=network_details.get('driver', 'bridge'),
+            ipam=ipam_pool
+        )
         created_networks[network_name] = network
         print(f"Network {network_name} created with ID {network.id}.")
     return created_networks
@@ -78,6 +94,12 @@ def convert_ports(ports):
         host_port, container_port = port.split(":")
         port_bindings[container_port + "/tcp"] = int(host_port)
     return port_bindings
+
+def convert_expose_ports(expose):
+    exposed_ports = {}
+    for port in expose:
+        exposed_ports[port + "/tcp"] = {}
+    return exposed_ports
 
 def remove_existing_endpoint(network, container_name):
     try:
@@ -99,11 +121,12 @@ def create_network_and_containers(compose_content):
 
     for service_name, service in services.items():
         image_name = service['image']
+        container_name = service.get('container_name', service_name)
         get_or_pull_image(client, image_name)
 
         # Remove existing container if it exists
         try:
-            existing_container = client.containers.get(service_name)
+            existing_container = client.containers.get(container_name)
             print(f"Removing existing container {existing_container.name} with ID {existing_container.id}...")
             existing_container.stop()
             existing_container.remove()
@@ -124,29 +147,26 @@ def create_network_and_containers(compose_content):
         try:
             container = client.containers.run(
                 image_name,
-                name=service_name,
+                name=container_name,
                 detach=True,
                 network_mode=network_mode,
                 ports=port_bindings,
                 environment=service.get('environment', {}),
-                volumes=service.get('volumes', {})
+                volumes=service.get('volumes', {}),
+                restart_policy={"Name": service.get('restart', 'no')}
             )
-            print(f"Container {service_name} started with ID {container.id}.")
+            print(f"Container {container_name} started with ID {container.id}.")
 
             # Connect the container to additional networks if specified
-            for net_name, net_config in network_aliases.items():
+            for net_name, net_details in network_aliases.items():
                 if net_name in created_networks:
-                    remove_existing_endpoint(created_networks[net_name], service_name)
-                    created_networks[net_name].connect(
-                        container, 
-                        aliases=net_config.get('aliases', []),
-                        ipv4_address=net_config.get('ipv4_address')
-                    )
-                    print(f"Container {service_name} connected to network {net_name} with IP {net_config.get('ipv4_address')}.")
+                    remove_existing_endpoint(created_networks[net_name], container_name)
+                    created_networks[net_name].connect(container, ipv4_address=net_details.get('ipv4_address'), aliases=[service_name])
+                    print(f"Container {container_name} connected to network {net_name} with IP {net_details.get('ipv4_address')}.")
 
             containers.append(container)
         except APIError as e:
-            print(f"Error starting container {service_name}: {e}")
+            print(f"Error starting container {container_name}: {e}")
 
     return {
         "network_names": list(created_networks.keys()),
