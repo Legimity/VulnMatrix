@@ -67,9 +67,8 @@ class Application(tornado.web.Application):
             (r"/add_user", Add_User_Handler),
 
             (r"/tool_manage", ToolManager),
-            # (r"/ws", SSHWebSocketHandler),
-            # (r"/ws", TreminalWebSocketHandler),
-
+            (r"/ws", TreminalWebSocketHandler),
+            (r"/test", TestManager),
             (r".*", ErrorHandler),
         ]
         # 初始化tornado的设置
@@ -158,8 +157,7 @@ class BaseHandler(tornado.web.RequestHandler):
             cursors = self.application.db.cursor()
             # 修改查询语句，正确检查表是否存在
             cursors.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name=? ", (table_name,))
-            if cursors.fetchone()[0] == 0:  # 使用索引访问结果
-                print(create_sql)
+            if cursors.fetchone()['count(*)'] == 0:  # 使用索引访问结果
                 cursors.execute(create_sql)
                 self.application.db.commit()
                 logger.info(f"数据表 {table_name} 不存在，已创建。")
@@ -846,7 +844,6 @@ class Add_User_Handler(BaseHandler):
 
 
 from utils.regProduct import generate_reg_file
-
 class ToolManager(BaseHandler):
     '''
     工具管理界面 快捷使用攻击进行渗透测试
@@ -873,7 +870,7 @@ class ToolManager(BaseHandler):
         self.check_and_create_table('tb_local_tool', 'CREATE TABLE tb_local_tool (id INTEGER PRIMARY KEY AUTOINCREMENT, tool_name VARCHAR(255), tool_path VARCHAR(255));')
         # 检查是否存在远程工具表，如果不存在则创建
         self.check_and_create_table('tb_remote_tool', 'CREATE TABLE tb_remote_tool (id INTEGER PRIMARY KEY AUTOINCREMENT, tool_name VARCHAR(255), tool_path VARCHAR(255));')
-        data = self.request.body
+        data = self.request.body.decode('utf-8')
         try:
             data = json.loads(data)
         except Exception as e:
@@ -886,14 +883,13 @@ class ToolManager(BaseHandler):
         # 文件传输
         file_name = os.path.basename(file_path)
         # 设置HTTP头部，告诉浏览器这是一个文件下载响应
-        self.set_header('Content-Type', 'application/octet-stream')
-        self.set_header('Content-Disposition', f'attachment; filename="{file_name}"')
-        with open(file_path, 'rb') as f:
-            while True:
-                data = f.read(16384)  # 读取文件块
-                if not data:
-                    break
-                self.write(data)
+        self.set_header('Content-Type', 'application/json')
+        try:
+            with open(file_path, 'rb') as f:
+                data = f.read()  # 读取文件块
+                self.write(json.dumps({"status": "success","filename" : exeName +".reg","content": data.decode('utf-8')}))
+        except Exception as e:
+            self.write(json.dumps({"status": "error", "message": str(e)}))
         self.finish()
 '''
 # class MyThread(threading.Thread):
@@ -943,35 +939,43 @@ class ToolManager(BaseHandler):
 '''
 
 # pty Linux终端版本
-# import pty
-# class TreminalWebSocketHandler(tornado.websocket.WebSocketHandler):
-#     def open(self):
-#         self.master_fd, slave_fd = pty.openpty()
-#         self.pid = os.fork()
-#         if self.pid == 0:  # 子进程
-#             os.setsid()
-#             os.dup2(slave_fd, 0)
-#             os.dup2(slave_fd, 1)
-#             os.dup2(slave_fd, 2)
-#             os.close(slave_fd)
-#             os.close(self.master_fd)
-#             os.execv('/bin/sh', ['/bin/sh'])
-#         else:  # 父进程
-#             os.close(slave_fd)
-#             self.ioloop = tornado.ioloop.IOLoop.current()
-#             self.fd_handler = self.ioloop.add_handler(self.master_fd, self.handle_terminal_output, self.ioloop.READ)
+import pty
+class TreminalWebSocketHandler(tornado.websocket.WebSocketHandler):
+    def open(self):
+        self.master_fd, slave_fd = pty.openpty()
+        self.pid = os.fork()
+        if self.pid == 0:  # 子进程
+            os.setsid()
+            os.dup2(slave_fd, 0)
+            os.dup2(slave_fd, 1)
+            os.dup2(slave_fd, 2)
+            os.close(slave_fd)
+            os.close(self.master_fd)
+            os.execv('/bin/bash', ['/bin/bash'])
+        else:  # 父进程
+            os.close(slave_fd)
+            self.ioloop = tornado.ioloop.IOLoop.current()
+            self.fd_handler = self.ioloop.add_handler(self.master_fd, self.handle_terminal_output, self.ioloop.READ)
 
-#     def on_message(self, message):
-#         os.write(self.master_fd, message.encode())
+    def on_message(self, message):
+        os.write(self.master_fd, message.encode())
 
-#     def on_close(self):
-#         self.ioloop.remove_handler(self.master_fd)
-#         os.kill(self.pid, 9)
+    def on_close(self):
+        self.ioloop.remove_handler(self.master_fd)
+        os.kill(self.pid, 9)
 
-#     def handle_terminal_output(self, fd, events):
-#         if events & self.ioloop.READ:
-#             output = os.read(self.master_fd, 1024).decode()
-#             self.write_message(output)
+    def handle_terminal_output(self, fd, events):
+        if events & self.ioloop.READ:
+            output = os.read(self.master_fd, 1024).decode()
+            self.write_message(output)
+
+class TestManager(BaseHandler):
+    '''
+    工具管理界面 快捷使用攻击进行渗透测试
+    '''
+    @tornado.web.authenticated
+    def get(self):
+        self.render('test.html')
 
 def main():
     tornado.options.parse_command_line()

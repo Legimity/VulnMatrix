@@ -10,8 +10,6 @@
     /* 滑动窗口容器样式 */
     .tool-scroll-container {
         height: 340px;
-        /* 根据需要设置固定高度 */
-        overflow-x: auto;
     }
 
     /* 工具列表和项样式 */
@@ -35,17 +33,12 @@
 
     .tool-button-container {
         width: calc(33.3% - 10px);
-        /* 减去边距，确保一行四个 */
         margin: 5px;
-        /* 添加一些外边距 */
         box-sizing: border-box;
-        /* 确保宽度包含内边距和边框 */
     }
 
-    /* 按钮样式 */
     .tool-button {
         width: 100%;
-        /* 填满容器宽度 */
         padding: 10px;
         margin-bottom: 10px;
         border: none;
@@ -58,28 +51,41 @@
         transition: background-color 0.3s, box-shadow 0.3s;
     }
 
-    /* 按钮悬停效果 */
     .tool-button:hover {
         background-color: #e9e9e9;
-        /* 鼠标悬停时的背景色 */
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        /* 鼠标悬停时的阴影效果 */
     }
 
-    /* 工具名称样式 */
     .tool-name {
         font-weight: bold;
-        /* 加粗字体 */
     }
 
-    /* 工具列表标题样式 */
     h5 {
         margin-bottom: 15px;
-        /* 标题和列表之间的外边距 */
         font-size: 16px;
-        /* 字体大小 */
         color: white;
-        /* 字体颜色 */
+    }
+
+
+    .tab-headers {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+    }
+
+    .tab-headers li {
+        padding: 10px 10px;
+        cursor: pointer;
+        font-size: medium;
+        border: 0.5px solid #555;
+    }
+    .tab-content {
+        padding: 0 !important;
+        border: 0.5px solid #555 !important;
+    }
+    .xterm-viewport{
+        overflow: hidden !important;
     }
 </style>
 {% end %}
@@ -90,10 +96,16 @@
         <div class="col-lg-4 col-md-6 h-100"> <!-- 占据半个屏幕宽度和整个屏幕高度 -->
             <div class="card-box widget-user h-100"> <!-- 使卡片盒高度为100% -->
                 <div class="text-center h-100">
-                    <h4  style="font-family:'Rancho';font-size: 28px;text-align: left;">Quick Start</h4>
+                    <h4 style="font-family:'Rancho'; font-size:28px; text-align:left">Quick Start</h4>
                 </div>
                 <div class="tool-scroll-container">
-                    <h5>本地工具</h5>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h5>本地工具</h5>
+                        <!-- 按钮触发模态框 -->
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+                            添加工具
+                        </button>
+                    </div>
                     <div class="local-tools-list"> <!-- 工具列表 -->
                         <!-- 工具项，您可以根据需要添加更多 -->
                         {% for index, (tool, path) in enumerate(tools['local'].items()) %}
@@ -111,7 +123,7 @@
                         <!-- 工具项，您可以根据需要添加更多 -->
                         {% for index, (tool, path) in enumerate(tools['remote'].items()) %}
                         <div class="tool-button-container">
-                            <button class="tool-button" onclick="startTool('{{ path }}')">
+                            <button class="tool-button" onclick="addTab('{{ tool }}')">
                                 <span class="tool-name">{{ tool }}</span> <!-- 工具名称 -->
                             </button>
                         </div>
@@ -120,16 +132,99 @@
                 </div>
             </div>
         </div>
+        <!-- 终端 -->
         <div class="col-lg-8 col-md-6 h-100"> <!-- 占据半个屏幕宽度和整个屏幕高度 -->
-            <div class="card-box widget-user h-100"> <!-- 使卡片盒高度为100% -->
-                <div id="terminal"></div>
+            <ul class="tab-headers">
+                <!-- 标签页头部，动态添加 -->
+            </ul>
+            <div class="tab-contents">
+                <!-- 标签页内容，动态添加 -->
             </div>
         </div>
+        <!-- 模态框 -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content" style="padding: 10px;">
+                    <div class="modal-header" style="padding: 5px;">
+                        <h5 class="modal-title" id="exampleModalLabel">添加工具</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="padding: 5px;">
+                        <form id="addToolForm">
+                            <div class="form-group">
+                                <label for="ToolName">工具名称:</label>
+                                <input type="text" class="form-control" id="ToolName" name="ToolName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="ToolPath">路径:</label>
+                                <input type="text" class="form-control" id="ToolPath" name="ToolPath" required>
+                                <!-- 隐藏的输入字段，用于存储文件路径 -->
+                            </div>
+                            <input type="submit" class="btn btn-primary" value="提交">
+                            <h5>TIP :命令行工具提供文件所在目录路径,EXE文件提供文件所在路径</h5>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>]
     </div>
 </div>
+
 {% end %}
 
 {% block js %}
+<!-- 引入Bootstrap Bundle JavaScript (包括Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 只提交文件路径 不提交文件
+    // 给模态框添加JavaScript逻辑
+    document.getElementById('addToolForm').onsubmit = function (event) {
+        event.preventDefault(); // 阻止表单默认提交行为
+        var ToolName = document.getElementById('ToolName').value;
+        var ToolPath = document.getElementById('ToolPath').value;
+        console.log('ToolName: ' + ToolName + ', ToolPath: ' + ToolPath);
+        // 发送Ajax请求  
+        $.ajax({
+            url: "/tool_manage", //要请求的后端地址
+            type: "PUT", //
+            data: JSON.stringify({ exeName: ToolName, exePath: ToolPath }), //需要传递的参数
+            dataType: "json", //后端返回的数据格式
+            contentType: "application/json", //这个必须，不然后台接受时会出现乱码现象
+            success: function (result) {//ajax请求成功后触发的方法
+                console.log('Send Request Success..');
+                console.log(result);
+                // // 文件下载
+                var data = result['content']; // 可能需要根据实际情况对数据进行处理
+                var fileName = result['filename']; // 设置下载的文件名
+
+                // 创建Blob对象
+                var blob = new Blob([data], { type: "text/plain" });
+
+                // 创建指向Blob的URL
+                var url = window.URL.createObjectURL(blob);
+
+                // 创建<a>元素并设置属性
+                var a = document.createElement("a");
+                a.href = url;
+                a.download = fileName;
+
+                // 模拟点击<a>元素以触发下载
+                document.body.appendChild(a); // 将<a>元素添加到页面中
+                a.click();
+                // 清理
+                window.URL.revokeObjectURL(url); // 释放URL对象
+                document.body.removeChild(a); // 从页面中移除<a>元素
+            },
+            error: function () {//ajax请求失败后触发的方法
+                console.log('Send Request Fail..');
+            }
+        });
+        $('#exampleModal').modal('hide'); // 隐藏模态框
+    };
+</script>
 <script>
     // 工具调用
     function detectOS() {
@@ -151,42 +246,110 @@
         }
     }
 
+    // 本地工具调用
     function startLocalTool(path) {
         detectOS() ? window.open(path + "://") : alert('请在Windows系统下使用本地工具');
     }
 
-    // 创建xterm 终端通信 
-    const xterm = new Terminal({
-        fontSize: 18,
-        fontFamily: 'monospace',
-        rendererType: 'canvas', // 渲染类型
-        convertEol: true, // 启用时，光标将设置为下一行的开头
-        // scrollback: 50, // 终端中的回滚量
-        // disableStdin: false, // 是否应禁用输入
-        cursorBlink: true, // 光标闪烁
-        theme: {
-            foreground: '#ECECEC', // 字体颜色
-            background: '#000000', // 背景色
-            lineHeight: 20
-        }
-    });
-    const fitAddon = new FitAddon.FitAddon();
-    xterm.loadAddon(fitAddon)
-    xterm.open(document.getElementById('terminal'));
-    //黑窗口适应实际div宽高
-    fitAddon.fit();
-    // 创建WebSocket连接
-    const socket = new WebSocket("ws://127.0.0.1:8000/ws");
-    xterm.onData((data) => { // 网页xterm窗口中有输入的数据
-        socket.send(data); // 通过WebSocket发送给服务器
-    });
+    // 远程工具调用
+    function sendCommandToBackend(command) {
+        socket.send(command);
+    }
 
-    socket.onmessage = (event) => { // 收到来自服务器的WebSocket消息
-        xterm.write(event.data); // 向xterm对象写入数据
-    };
+    // 修改startRemoteTool函数，使用sendCommandToBackend发送命令
+    function startRemoteTool(path) {
+        const command = `cd ${path}\r`;
+        sendCommandToBackend(command);
+    }
 </script>
 <script src="static/plugin/sweetalert/sweetalert.min.js"></script>
 <script src="static/js/dropify.min.js"></script>
 <script src="static/js/ajaxfileupload.js"></script>
 <script src="static/buss/js/plugin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 多终端实现
+    function addTab(toolName) {
+        const tabHeaders = document.querySelector('.tab-headers');
+        // console.log(tabHeaders)
+        const tabContents = document.querySelector('.tab-contents');
+        // console.log(tabContents)
+        // 如果已经打开了这个工具 不再打卡 而是回到这个工具
+        for (let i = 0; i < tabHeaders.children.length; i++) {
+            if (tabHeaders.children[i].textContent === toolName) {
+                tabHeaders.children[i].click();
+                return;
+            }
+        }
+
+        // 创建新的标签页头部
+        const newTabHeader = document.createElement('li');
+        newTabHeader.textContent = toolName;
+        newTabHeader.setAttribute('data-tab-target', toolName + 'Content'); // 确保使用正确的属性名
+        tabHeaders.appendChild(newTabHeader);
+        document.querySelectorAll('.tab-content').forEach(tabContent => {
+                tabContent.style.display = 'none';
+        });
+        // 创建新的标签页内容
+        const newTabContent = document.createElement('div');
+        newTabContent.id = toolName + 'Content';
+        newTabContent.classList.add('tab-content');
+        tabContents.appendChild(newTabContent);
+        // 初始化xterm
+        initializeXterm(newTabContent.id);
+
+        // 为新标签页头部添加点击事件监听器
+        newTabHeader.addEventListener('click', function () {
+            document.querySelectorAll('.tab-content').forEach(tabContent => {
+                tabContent.style.display = 'none';
+            });
+            // 显示当前标签页对应的内容
+            const targetId = this.getAttribute('data-tab-target');
+            const targetContent = document.getElementById(targetId);
+            if (targetContent) {
+                targetContent.style.display = 'block';
+            }
+        });
+
+
+    }
+
+    function initializeXterm(containerId) {
+        const terminal = new Terminal({
+            fontSize: 18,
+            fontFamily: 'monospace',
+            rendererType: 'canvas', // 渲染类型
+            convertEol: true, // 启用时，光标将设置为下一行的开头
+            cursorBlink: true, // 光标闪烁
+            theme: {
+                foreground: '#ECECEC', // 字体颜色
+                background: '#000000', // 背景色
+                lineHeight: 20
+            }
+        }
+        );
+        const fitAddon = new FitAddon.FitAddon();
+        terminal.loadAddon(fitAddon);
+        const container = document.getElementById(containerId);
+        terminal.open(container);
+        fitAddon.fit();
+        // 为每个终端创建独立的WebSocket连接
+        const socket = new WebSocket(`ws://${window.location.host}/ws`);
+        socket.onopen = function () {
+            terminal.onData(data => {
+                socket.send(data);
+            });
+            socket.onmessage = function (event) {
+                terminal.write(event.data);
+            };
+        };
+
+        socket.onclose = function (e) {
+            console.log('WebSocket连接已关闭: ', e.reason);
+        };
+        socket.onerror = function (err) {
+            console.error('WebSocket错误: ', err);
+        };
+    }
+</script>
 {% end %}

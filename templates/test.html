@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 引入Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/xterm/css/xterm.css" />
+  <script src="https://unpkg.com/xterm-addon-fit@0.6.0/lib/xterm-addon-fit.js"></script>
+  <script src="https://unpkg.com/xterm/lib/xterm.js"></script>
+  <title>工具管理</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    .tabs {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tab-headers {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      background-color: #f1f1f1;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .tab-headers li {
+      padding: 10px 20px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      border-bottom: none;
+      background-color: #e9e9e9;
+    }
+
+    .tab-headers li.active {
+      background-color: white;
+      border-top: 2px solid blue;
+    }
+
+    .tab-content {
+      border: 1px solid #ccc;
+      padding: 20px;
+      /* 默认隐藏所有内容区域 */
+    }
+
+    .tab-content.active {
+      display: block;
+      /* 显示激活的内容区域 */
+    }
+  </style>
+</head>
+
+<body>
+  <button class="btn btn-primary" onclick="addTab('XSStrike')">XSStrike</button>
+  <button class="btn btn-primary" onclick="addTab('Beef')">Beef</button>
+  <div class="tabs">
+    <ul class="tab-headers">
+      <!-- 标签页头部，动态添加 -->
+    </ul>
+    <div class="tab-contents">
+      <!-- 标签页内容，动态添加 -->
+    </div>
+  </div>
+</body>
+
+
+<!-- 引入Bootstrap JS 和依赖的Popper.js -->
+<script>
+
+  function addTab(toolName) {
+    const tabHeaders = document.querySelector('.tab-headers');
+    // console.log(tabHeaders)
+    const tabContents = document.querySelector('.tab-contents');
+    console.log(tabContents)
+
+
+    // 创建新的标签页头部
+    const newTabHeader = document.createElement('li');
+    newTabHeader.textContent = toolName;
+    newTabHeader.setAttribute('data-tab-target', toolName + 'Content'); // 确保使用正确的属性名
+    tabHeaders.appendChild(newTabHeader);
+
+    // 创建新的标签页内容
+    const newTabContent = document.createElement('div');
+    if (tabContents.children.length > 0) {
+      newTabContent.style.display = 'none';
+    }
+    newTabContent.id = toolName + 'Content';
+    newTabContent.classList.add('tab-content');
+    tabContents.appendChild(newTabContent);
+    // 初始化xterm
+    initializeXterm(newTabContent.id);
+
+    // 为新标签页头部添加点击事件监听器
+    newTabHeader.addEventListener('click', function () {
+      document.querySelectorAll('.tab-content').forEach(tabContent => {
+        tabContent.style.display = 'none';
+      });
+      // 显示当前标签页对应的内容
+      const targetId = this.getAttribute('data-tab-target');
+      const targetContent = document.getElementById(targetId);
+      if (targetContent) {
+        targetContent.style.display = 'block';
+      }
+    });
+
+
+  }
+
+  function initializeXterm(containerId) {
+    const terminal = new Terminal();
+    const fitAddon = new FitAddon.FitAddon();
+    terminal.loadAddon(fitAddon);
+    const container = document.getElementById(containerId);
+    terminal.open(container);
+    fitAddon.fit();
+
+    // 为每个终端创建独立的WebSocket连接
+    const socket = new WebSocket(`ws://${window.location.host}/ws`);
+    socket.onopen = function () {
+      terminal.onData(data => {
+        socket.send(data);
+      });
+      socket.onmessage = function (event) {
+        terminal.write(event.data);
+      };
+    };
+
+    socket.onclose = function (e) {
+      console.log('WebSocket连接已关闭: ', e.reason);
+    };
+    socket.onerror = function (err) {
+      console.error('WebSocket错误: ', err);
+    };
+  }
+
+
+</script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</html>
