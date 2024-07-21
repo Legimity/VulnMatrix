@@ -1,0 +1,16 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\CallBSEXE010]
+@="URL: CallBSEXE010 Protocol Handler"
+"URL Protocol"=""
+
+;E:\localExe\gy_print.exe 为本地EXE路径
+[HKEY_CLASSES_ROOT\CallBSEXE010\DefaultIcon]
+@="C:\\tool\\010Editor\\010 Editor 12.0.1.exe"
+
+[HKEY_CLASSES_ROOT\CallBSEXE010\Shell]
+
+[HKEY_CLASSES_ROOT\CallBSEXE010\Shell\Open]
+
+[HKEY_CLASSES_ROOT\CallBSEXE010\Shell\Open\Command]
+@="\"C:\\tool\\010Editor\\010 Editor 12.0.1.exe\" %1"

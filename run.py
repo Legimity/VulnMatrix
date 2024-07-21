@@ -1,13 +1,4 @@
 #! coding=utf-8
-
-
-'''
-    常见漏洞的总结，可以在此项目里练习各种常见的web漏洞。
-    使用docker作为漏洞的容器，使用python调用容器，在web界面可以管理容器，开启，关闭。使用tornado框架开发web界面。
-
-'''
-
-
 import os
 import sqlite3
 import hashlib
@@ -16,14 +7,16 @@ import json
 import re
 import random
 import asyncio
+import time 
 
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
+import paramiko
 
 from docker_lib import Dockers_Start, Dockers_Stop, Dockers_Info
-from system_info import Start_Get_Sysinfo
+from utils import Start_Get_Sysinfo
 from log.logger import logger
 from tornado.options import define, options
 
@@ -38,7 +31,7 @@ Sys_Pass = 'admin123'
 
 define("port", default = 8000, help = "run on the given port", type = int)
 define("host", default = '0.0.0.0',help = "run on the given host", type = str)
-define("sqlite_path", default = "./test.db", help = "database path")
+define("sqlite_path", default = "./DB/test.db", help = "database path")
 
 
 class Application(tornado.web.Application):
@@ -72,6 +65,10 @@ class Application(tornado.web.Application):
 
             (r"/change_pass", Change_Pass_Handler),
             (r"/add_user", Add_User_Handler),
+
+            (r"/tool_manage", ToolManager),
+            # (r"/ws", SSHWebSocketHandler),
+            # (r"/ws", TreminalWebSocketHandler),
 
             (r".*", ErrorHandler),
         ]
@@ -148,8 +145,28 @@ class BaseHandler(tornado.web.RequestHandler):
         except Exception as e:
             logger.error('数据库插入更改数据出错！SQL语句为：%s,错误原因为：%s' % (sql, e))
             return False
-
         return True
+    
+    def check_and_create_table(self, table_name, create_sql):
+        '''
+        检查是否存在指定的数据表，如果不存在则创建
+        :param table_name: 数据表名称
+        :param create_sql: 创建数据表的SQL语句
+        :return: 无返回值
+        '''
+        try:
+            cursors = self.application.db.cursor()
+            # 修改查询语句，正确检查表是否存在
+            cursors.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name=? ", (table_name,))
+            if cursors.fetchone()[0] == 0:  # 使用索引访问结果
+                print(create_sql)
+                cursors.execute(create_sql)
+                self.application.db.commit()
+                logger.info(f"数据表 {table_name} 不存在，已创建。")
+            else:
+                logger.info(f"数据表 {table_name} 已存在。")
+        except Exception as e:
+            logger.error(f"检查或创建数据表 {table_name} 出错，错误原因为：{e}")
 
     def get_current_user(self):
         '''
@@ -330,7 +347,6 @@ class SettingHandler(BaseHandler):
     '''
     设置页面
     '''
-
     @tornado.web.authenticated
     def get(self):
         self.render('change_pass.html', error='')
@@ -785,7 +801,7 @@ class Change_Pass_Handler(BaseHandler):
 
 class Reset_System_Handler(BaseHandler):
     '''
-    系统重置页面
+    系统重置页面 重置系统
     '''
 
     @tornado.web.authenticated
@@ -797,11 +813,11 @@ class Reset_System_Handler(BaseHandler):
         password = self.get_argument('password', '')
         pass
 
+
 class Add_User_Handler(BaseHandler):
     '''
-    系统重置页面
+    系统重置页面 新增用户
     '''
-
     @tornado.web.authenticated
     def get(self):
         sys_pass = self.get_argument('sys_pass', '').strip()
@@ -829,6 +845,133 @@ class Add_User_Handler(BaseHandler):
         self.render('setting.html', error = '加入用户成功！')
 
 
+from utils.regProduct import generate_reg_file
+
+class ToolManager(BaseHandler):
+    '''
+    工具管理界面 快捷使用攻击进行渗透测试
+    '''
+    @tornado.web.authenticated
+    def get(self):
+        local_tools = self.db_select('SELECT * FROM tb_local_tool;')
+        tool = dict()
+        tool.setdefault('local', {})
+        tool.setdefault('remote', {})
+        print(local_tools)
+        for local_tool in local_tools:
+            tool['local'][local_tool['tool_name']] = local_tool['tool_path']
+        tool['remote'] = {"metasploit":"/",
+                      "bee":"/",
+                      "sqlmap":"/",
+                      "nmap":"/"
+                      }
+        self.render('tool_manage.html',tools=tool)
+
+    @tornado.web.authenticated
+    def put(self):
+        # 检查是否存在本地工具表，如果不存在则创建
+        self.check_and_create_table('tb_local_tool', 'CREATE TABLE tb_local_tool (id INTEGER PRIMARY KEY AUTOINCREMENT, tool_name VARCHAR(255), tool_path VARCHAR(255));')
+        # 检查是否存在远程工具表，如果不存在则创建
+        self.check_and_create_table('tb_remote_tool', 'CREATE TABLE tb_remote_tool (id INTEGER PRIMARY KEY AUTOINCREMENT, tool_name VARCHAR(255), tool_path VARCHAR(255));')
+        data = self.request.body
+        try:
+            data = json.loads(data)
+        except Exception as e:
+            logger.error('获取数据失败！')
+            self.write('error')
+        exeName = data.get('exeName', '')
+        exePath = data.get('exePath', '')
+        procotalName,file_path = generate_reg_file(exePath)
+        self.db_update_insert('INSERT INTO tb_local_tool (tool_name, tool_path) VALUES (?, ?);', [exeName, procotalName])
+        # 文件传输
+        file_name = os.path.basename(file_path)
+        # 设置HTTP头部，告诉浏览器这是一个文件下载响应
+        self.set_header('Content-Type', 'application/octet-stream')
+        self.set_header('Content-Disposition', f'attachment; filename="{file_name}"')
+        with open(file_path, 'rb') as f:
+            while True:
+                data = f.read(16384)  # 读取文件块
+                if not data:
+                    break
+                self.write(data)
+        self.finish()
+'''
+# class MyThread(threading.Thread):
+#     def __init__(self, id, chan):
+#         threading.Thread.__init__(self)
+#         self.chan = chan
+
+#     def run(self):
+#         while not self.chan.chan.exit_status_ready():
+#             time.sleep(0.1)
+#             try:
+#                 data = self.chan.chan.recv(1024)
+#                 self.chan.write_message(data)
+#             except Exception as ex:
+#                 # 注释掉print，否则会报错，原因：库版本不对
+#                 # print(str(ex))
+#                 pass
+#         self.chan.sshclient.close()
+#         return False
+
+# SSH 远程连接版本
+# class SSHWebSocketHandler(tornado.websocket.WebSocketHandler):
+#     def open(self):
+#         self.sshclient = paramiko.SSHClient()
+#         self.sshclient.load_system_host_keys()
+#         self.sshclient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+#         self.sshclient.connect("211.65.193.161", "22", "jhxu", "xujianhao.12345")
+#         self.chan = self.sshclient.invoke_shell(term='xterm')
+#         self.chan.settimeout(0)
+#         t1 = MyThread(999, self)
+#         t1.setDaemon(True)
+#         t1.start()
+
+#     def on_message(self, message):
+#         try:
+#             print(message)
+#             self.chan.send(message)
+#         except Exception as ex:
+#             print(str(ex))
+
+#     def on_close(self):
+#         self.sshclient.close()
+
+#     def check_origin(self, origin):
+#         # 允许跨域访问
+#         return True
+'''
+
+# pty Linux终端版本
+# import pty
+# class TreminalWebSocketHandler(tornado.websocket.WebSocketHandler):
+#     def open(self):
+#         self.master_fd, slave_fd = pty.openpty()
+#         self.pid = os.fork()
+#         if self.pid == 0:  # 子进程
+#             os.setsid()
+#             os.dup2(slave_fd, 0)
+#             os.dup2(slave_fd, 1)
+#             os.dup2(slave_fd, 2)
+#             os.close(slave_fd)
+#             os.close(self.master_fd)
+#             os.execv('/bin/sh', ['/bin/sh'])
+#         else:  # 父进程
+#             os.close(slave_fd)
+#             self.ioloop = tornado.ioloop.IOLoop.current()
+#             self.fd_handler = self.ioloop.add_handler(self.master_fd, self.handle_terminal_output, self.ioloop.READ)
+
+#     def on_message(self, message):
+#         os.write(self.master_fd, message.encode())
+
+#     def on_close(self):
+#         self.ioloop.remove_handler(self.master_fd)
+#         os.kill(self.pid, 9)
+
+#     def handle_terminal_output(self, fd, events):
+#         if events & self.ioloop.READ:
+#             output = os.read(self.master_fd, 1024).decode()
+#             self.write_message(output)
 
 def main():
     tornado.options.parse_command_line()

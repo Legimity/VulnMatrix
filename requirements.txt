@@ -3,3 +3,7 @@ tornado
 psutil
 supervisor
 virtualenv
+websockets
+ptyprocess
+paramiko
+pywinpty

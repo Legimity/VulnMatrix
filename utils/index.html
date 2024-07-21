@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://unpkg.com/xterm@4.18.0/lib/xterm.js"></script>
+    <!-- Xterm js 显示 CDN依赖 -->
+    <script src="https://unpkg.com/xterm-addon-fit@0.6.0/lib/xterm-addon-fit.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/xterm@4.18.0/css/xterm.css">
+</head>
+<body>
+    <div style="width: 736px; height: 408px;">
+        <!-- 目前版本的 Xterm 5.1.0 默认串口大小 24x80 -->
+        <div id="terminal"></div>
+    </div>
+    <script>
+        const term = new Terminal();
+
+        term.open(document.querySelector('#terminal')); // 挂载
+
+        const socket = new WebSocket(`ws://${window.location.host}/webterminal`); // 创建WebSocket连接
+
+        term.onData((data) => { // 网页xterm窗口中有输入的数据
+            // console.log('term.onData:', data);
+            socket.send(data); // 通过WebSocket发送给服务器
+        });
+        
+        socket.onmessage = (event) => { // 收到来自服务器的WebSocket消息
+            // console.log('socket.onmessage:', event.data);
+            term.write(event.data); // 向xterm对象写入数据
+        };
+    </script>
+</body>
+————————————————
+
+                            版权声明：本文为博主原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接和本声明。
+                        
+原文链接：https://blog.csdn.net/Naisu_kun/article/details/130774938
+</html>

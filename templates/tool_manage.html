@@ -1,0 +1,192 @@
+{% extends "layout.html" %}
+{% block css %}
+<!-- Xterm js CDN依赖 -->
+<script src="https://unpkg.com/xterm@4.18.0/lib/xterm.js"></script>
+<!-- Xterm js 显示 CDN依赖 -->
+<script src="https://unpkg.com/xterm-addon-fit@0.6.0/lib/xterm-addon-fit.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/xterm@4.18.0/css/xterm.css">
+
+<style>
+    /* 滑动窗口容器样式 */
+    .tool-scroll-container {
+        height: 340px;
+        /* 根据需要设置固定高度 */
+        overflow-x: auto;
+    }
+
+    /* 工具列表和项样式 */
+    .local-tools-list .remote-tools-list {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    /* 工具列表样式 */
+    .local-tools-list,
+    .remote-tools-list {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    .tool-button-container {
+        width: calc(33.3% - 10px);
+        /* 减去边距，确保一行四个 */
+        margin: 5px;
+        /* 添加一些外边距 */
+        box-sizing: border-box;
+        /* 确保宽度包含内边距和边框 */
+    }
+
+    /* 按钮样式 */
+    .tool-button {
+        width: 100%;
+        /* 填满容器宽度 */
+        padding: 10px;
+        margin-bottom: 10px;
+        border: none;
+        background-color: #f8f8f8;
+        color: #333;
+        text-align: center;
+        cursor: pointer;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s, box-shadow 0.3s;
+    }
+
+    /* 按钮悬停效果 */
+    .tool-button:hover {
+        background-color: #e9e9e9;
+        /* 鼠标悬停时的背景色 */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        /* 鼠标悬停时的阴影效果 */
+    }
+
+    /* 工具名称样式 */
+    .tool-name {
+        font-weight: bold;
+        /* 加粗字体 */
+    }
+
+    /* 工具列表标题样式 */
+    h5 {
+        margin-bottom: 15px;
+        /* 标题和列表之间的外边距 */
+        font-size: 16px;
+        /* 字体大小 */
+        color: white;
+        /* 字体颜色 */
+    }
+</style>
+{% end %}
+
+{% block webinfo %}
+<div class="container">
+    <div class="row h-100"> <!-- 设置行高度为整个视口高度 -->
+        <div class="col-lg-4 col-md-6 h-100"> <!-- 占据半个屏幕宽度和整个屏幕高度 -->
+            <div class="card-box widget-user h-100"> <!-- 使卡片盒高度为100% -->
+                <div class="text-center h-100">
+                    <h4  style="font-family:'Rancho';font-size: 28px;text-align: left;">Quick Start</h4>
+                </div>
+                <div class="tool-scroll-container">
+                    <h5>本地工具</h5>
+                    <div class="local-tools-list"> <!-- 工具列表 -->
+                        <!-- 工具项，您可以根据需要添加更多 -->
+                        {% for index, (tool, path) in enumerate(tools['local'].items()) %}
+                        <div class="tool-button-container">
+                            <button class="tool-button" onclick="startLocalTool('{{ path }}')">
+                                <span class="tool-name">{{ tool }}</span> <!-- 工具名称 -->
+                            </button>
+                        </div>
+                        {% end %}
+                    </div>
+                </div>
+                <div class="tool-scroll-container">
+                    <h5>远程工具</h5>
+                    <div class="remote-tools-list"> <!-- 工具列表 -->
+                        <!-- 工具项，您可以根据需要添加更多 -->
+                        {% for index, (tool, path) in enumerate(tools['remote'].items()) %}
+                        <div class="tool-button-container">
+                            <button class="tool-button" onclick="startTool('{{ path }}')">
+                                <span class="tool-name">{{ tool }}</span> <!-- 工具名称 -->
+                            </button>
+                        </div>
+                        {% end %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8 col-md-6 h-100"> <!-- 占据半个屏幕宽度和整个屏幕高度 -->
+            <div class="card-box widget-user h-100"> <!-- 使卡片盒高度为100% -->
+                <div id="terminal"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% end %}
+
+{% block js %}
+<script>
+    // 工具调用
+    function detectOS() {
+        const userAgent = window.navigator.userAgent;
+        if (userAgent.indexOf('Windows') !== -1) {
+            return true;
+        } else if (userAgent.indexOf('Mac OS X') !== -1) {
+            return false;
+        } else if (userAgent.indexOf('Linux') !== -1) {
+            return false;
+        } else if (userAgent.indexOf('CrOS') !== -1) {
+            return false;
+        } else if (userAgent.indexOf('Android') !== -1) {
+            return false;
+        } else if (userAgent.indexOf('iPhone') !== -1 || userAgent.indexOf('iPad') !== -1) {
+            return false;
+        } else {
+            return false;
+        }
+    }
+
+    function startLocalTool(path) {
+        detectOS() ? window.open(path + "://") : alert('请在Windows系统下使用本地工具');
+    }
+
+    // 创建xterm 终端通信 
+    const xterm = new Terminal({
+        fontSize: 18,
+        fontFamily: 'monospace',
+        rendererType: 'canvas', // 渲染类型
+        convertEol: true, // 启用时，光标将设置为下一行的开头
+        // scrollback: 50, // 终端中的回滚量
+        // disableStdin: false, // 是否应禁用输入
+        cursorBlink: true, // 光标闪烁
+        theme: {
+            foreground: '#ECECEC', // 字体颜色
+            background: '#000000', // 背景色
+            lineHeight: 20
+        }
+    });
+    const fitAddon = new FitAddon.FitAddon();
+    xterm.loadAddon(fitAddon)
+    xterm.open(document.getElementById('terminal'));
+    //黑窗口适应实际div宽高
+    fitAddon.fit();
+    // 创建WebSocket连接
+    const socket = new WebSocket("ws://127.0.0.1:8000/ws");
+    xterm.onData((data) => { // 网页xterm窗口中有输入的数据
+        socket.send(data); // 通过WebSocket发送给服务器
+    });
+
+    socket.onmessage = (event) => { // 收到来自服务器的WebSocket消息
+        xterm.write(event.data); // 向xterm对象写入数据
+    };
+</script>
+<script src="static/plugin/sweetalert/sweetalert.min.js"></script>
+<script src="static/js/dropify.min.js"></script>
+<script src="static/js/ajaxfileupload.js"></script>
+<script src="static/buss/js/plugin.js"></script>
+{% end %}
