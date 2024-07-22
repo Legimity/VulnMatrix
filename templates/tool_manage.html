@@ -178,7 +178,7 @@
         </div>
         <!-- 模态框 -->
         <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-             aria-hidden="true">
+            aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content" style="padding: 10px;">
                     <div class="modal-header" style="padding: 5px;">
@@ -221,7 +221,7 @@
         var ToolName = document.getElementById('ToolName').value;
         var ToolPath = document.getElementById('ToolPath').value;
         console.log('ToolName: ' + ToolName + ', ToolPath: ' + ToolPath);
-        // 发送Ajax请求
+        // 发送Ajax请求  
         $.ajax({
             url: "/tool_manage", //要请求的后端地址
             type: "PUT", //
@@ -390,17 +390,17 @@
 
     function initializeXterm(containerId) {
         const terminal = new Terminal({
-                fontSize: 18,
-                fontFamily: 'monospace',
-                rendererType: 'canvas', // 渲染类型
-                convertEol: true, // 启用时，光标将设置为下一行的开头
-                cursorBlink: true, // 光标闪烁
-                theme: {
-                    foreground: '#ECECEC', // 字体颜色
-                    background: '#000000', // 背景色
-                    lineHeight: 20
-                }
+            fontSize: 18,
+            fontFamily: 'monospace',
+            rendererType: 'canvas', // 渲染类型
+            convertEol: true, // 启用时，光标将设置为下一行的开头
+            cursorBlink: true, // 光标闪烁
+            theme: {
+                foreground: '#ECECEC', // 字体颜色
+                background: '#000000', // 背景色
+                lineHeight: 20
             }
+        }
         );
         const fitAddon = new FitAddon.FitAddon();
         terminal.loadAddon(fitAddon);
@@ -432,3 +432,4 @@
         addTab('Terminal');
     })
 </script>
+{% end %}

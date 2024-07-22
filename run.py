@@ -1,13 +1,3 @@
-#! coding=utf-8
-
-
-'''
-    常见漏洞的总结，可以在此项目里练习各种常见的web漏洞。
-    使用docker作为漏洞的容器，使用python调用容器，在web界面可以管理容器，开启，关闭。使用tornado框架开发web界面。
-
-'''
-
-
 import os
 import sqlite3
 import hashlib
@@ -24,7 +14,7 @@ import tornado.websocket
 
 # from docker_lib import Dockers_Start, Dockers_Stop, Dockers_Info
 from docker_lib import Dockers_Start, Dockers_Stop, Dockers_Info,Docker_ComposeControl
-from system_info import Start_Get_Sysinfo
+from utils import Start_Get_Sysinfo
 from log.logger import logger
 from tornado.options import define, options
 import dotenv
@@ -43,7 +33,7 @@ Sys_Pass = 'admin123'
 
 define("port", default = 8000, help = "run on the given port", type = int)
 define("host", default = '0.0.0.0',help = "run on the given host", type = str)
-define("sqlite_path", default = "./test.db", help = "database path")
+define("sqlite_path", default = "./DB/test.db", help = "database path")
 
 
 class Application(tornado.web.Application):
@@ -83,7 +73,8 @@ class Application(tornado.web.Application):
             (r"/upload", UploadHandler),
             # 测试
             (r"/boot_docker_compose", DockerComposeControlHandler),
-            
+            (r"/tool_manage", ToolManager),
+            (r"/ws", TreminalWebSocketHandler),
 
             
 
@@ -167,6 +158,26 @@ class BaseHandler(tornado.web.RequestHandler):
             return False
 
         return True
+    
+    def check_and_create_table(self, table_name, create_sql):
+        '''
+        检查是否存在指定的数据表，如果不存在则创建
+        :param table_name: 数据表名称
+        :param create_sql: 创建数据表的SQL语句
+        :return: 无返回值
+        '''
+        try:
+            cursors = self.application.db.cursor()
+            # 修改查询语句，正确检查表是否存在
+            cursors.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name=? ", (table_name,))
+            if cursors.fetchone()['count(*)'] == 0:  # 使用索引访问结果
+                cursors.execute(create_sql)
+                self.application.db.commit()
+                logger.info(f"数据表 {table_name} 不存在，已创建。")
+            else:
+                logger.info(f"数据表 {table_name} 已存在。")
+        except Exception as e:
+            logger.error(f"检查或创建数据表 {table_name} 出错，错误原因为：{e}")
 
     def get_current_user(self):
         '''
@@ -896,6 +907,91 @@ class Add_User_Handler(BaseHandler):
             return
 
         self.render('setting.html', error = '加入用户成功！')
+
+from utils.regProduct import generate_reg_file
+class ToolManager(BaseHandler):
+    '''
+    工具管理界面 快捷使用攻击进行渗透测试
+    '''
+    @tornado.web.authenticated
+    def get(self):
+        self.check_and_create_table('tb_local_tool', 'CREATE TABLE tb_local_tool (id INTEGER PRIMARY KEY AUTOINCREMENT, tool_name VARCHAR(255), tool_path VARCHAR(255));')
+        local_tools = self.db_select('SELECT * FROM tb_local_tool;')
+        tool = dict()
+        tool.setdefault('local', {})
+        tool.setdefault('remote', {})
+        print(local_tools)
+        for local_tool in local_tools:
+            tool['local'][local_tool['tool_name']] = local_tool['tool_path']
+        tool['remote'] = {"metasploit":"/",
+                      "bee":"/",
+                      "sqlmap":"/",
+                      "nmap":"/"
+                      }
+        self.render('tool_manage.html',tools=tool)
+
+    @tornado.web.authenticated
+    def put(self):
+        # 检查是否存在本地工具表，如果不存在则创建
+        self.check_and_create_table('tb_local_tool', 'CREATE TABLE tb_local_tool (id INTEGER PRIMARY KEY AUTOINCREMENT, tool_name VARCHAR(255), tool_path VARCHAR(255));')
+        # 检查是否存在远程工具表，如果不存在则创建
+        self.check_and_create_table('tb_remote_tool', 'CREATE TABLE tb_remote_tool (id INTEGER PRIMARY KEY AUTOINCREMENT, tool_name VARCHAR(255), tool_path VARCHAR(255));')
+        data = self.request.body.decode('utf-8')
+        try:
+            data = json.loads(data)
+        except Exception as e:
+            logger.error('获取数据失败！')
+            self.write('error')
+        exeName = data.get('exeName', '')
+        exePath = data.get('exePath', '')
+        procotalName,file_path = generate_reg_file(exePath)
+        self.db_update_insert('INSERT INTO tb_local_tool (tool_name, tool_path) VALUES (?, ?);', [exeName, procotalName])
+        # 文件传输
+        file_name = os.path.basename(file_path)
+        # 设置HTTP头部，告诉浏览器这是一个文件下载响应
+        self.set_header('Content-Type', 'application/json')
+        try:
+            with open(file_path, 'rb') as f:
+                data = f.read()  # 读取文件块
+                self.write(json.dumps({"status": "success","filename" : exeName +".reg","content": data.decode('utf-8')}))
+        except Exception as e:
+            self.write(json.dumps({"status": "error", "message": str(e)}))
+        self.finish()
+
+
+# pty Linux终端版本
+import pty
+class TreminalWebSocketHandler(tornado.websocket.WebSocketHandler):
+    def open(self):
+        self.master_fd, slave_fd = pty.openpty()
+        self.pid = os.fork()
+        if self.pid == 0:  # 子进程
+            os.setsid()
+            os.dup2(slave_fd, 0)
+            os.dup2(slave_fd, 1)
+            os.dup2(slave_fd, 2)
+            os.close(slave_fd)
+            os.close(self.master_fd)
+            # 指定Docker容器名称或ID
+            container_name_or_id = "0ae88c1b358d"
+            # 使用docker exec命令进入容器的bash
+            os.execv('/usr/bin/docker', ['docker', 'exec', '-it', container_name_or_id, '/bin/bash'])
+        else:  # 父进程
+            os.close(slave_fd)
+            self.ioloop = tornado.ioloop.IOLoop.current()
+            self.fd_handler = self.ioloop.add_handler(self.master_fd, self.handle_terminal_output, self.ioloop.READ)
+
+    def on_message(self, message):
+        os.write(self.master_fd, message.encode())
+
+    def on_close(self):
+        self.ioloop.remove_handler(self.master_fd)
+        os.kill(self.pid, 9)
+
+    def handle_terminal_output(self, fd, events):
+        if events & self.ioloop.READ:
+            output = os.read(self.master_fd, 1024).decode()
+            self.write_message(output)
 
 
 
