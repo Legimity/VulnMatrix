@@ -64,6 +64,7 @@ class Application(tornado.web.Application):
             (r"/logout", LogoutHandler),
             (r"/stop_all_containers", StopAllContainers),
 
+            (r"/view", ViewNetworkHandler),
             (r"/search_images", SearchImagesHandler),
             (r"/images_info", ImagesHandler),
             (r"/status_info", StatusHandler),
@@ -238,6 +239,10 @@ class DockerComposeControlHandler(tornado.web.RequestHandler):
         network_info=Docker_ComposeControl.run(docker_compose_path)
         return network_info
 
+
+class ViewNetworkHandler(BaseHandler):
+    def get(self):
+        self.render('view.html')
 
 
 class LoginHandler(BaseHandler):

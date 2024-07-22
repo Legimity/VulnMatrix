@@ -1,0 +1,191 @@
+
+.logo {
+    color: #ffffff !important;
+    font-size: 30px;
+    margin-top: 5px;
+    font-family: 'Raleway', sans-serif; /* 使用 Raleway 字体 */
+    text-align: left; /* 居中对齐 */
+    padding: 20px;
+}
+
+#sidebar {
+    position: fixed;  /* 侧边栏固定 */
+    top: 0;  /* 侧边栏距离顶部为0 */
+    left: 0;  /* 侧边栏距离左侧为0 */
+    width: 240px;  /* 侧边栏宽度 */
+    height: 100%;  /* 侧边栏高度，100%表示占满整个页面高度 */
+    background-color: #1a2023;
+    z-index: 1030;  /* 确保侧边栏在页面中的其他元素之上 */
+    padding-top: 20px;  /* 设置内边距为20  内边距：元素内容与元素边框之间的空间 */
+    box-shadow: 0 0px 24px 0 rgba(0, 0, 0, 0.06), 0 1px 0px 0 rgba(0, 0, 0, 0.02);  /* 添加阴影效果 */
+}
+
+#sidebar .navigation-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+#sidebar .navigation-menu > li {
+    display: block;
+    position: relative;
+}
+
+#sidebar .navigation-menu > li > a {
+    display: block;
+    color: white;
+    transition: all .3s ease;
+    line-height: 40px;
+    padding: 10px 20px;
+    border-left: 3px solid transparent; /* 添加左边框 */
+}
+/*鼠标悬停时边框背景色*/
+#sidebar .navigation-menu > li > a:hover {
+    color: #71b6f9;
+    background-color: #394a59; /* 添加背景颜色 */
+    border-left: 3px solid #71b6f9; /* 添加左边框颜色 */
+}
+/*鼠标悬停时：文字颜色*/
+#sidebar .navigation-menu > li > a:hover {
+    color: #71b6f9;
+}
+/*鼠标悬停时：文字左侧图标颜色*/
+#sidebar .navigation-menu > li > a:hover i {
+    color: #71b6f9;
+}
+/*获得焦点时的状态*/
+#sidebar .navigation-menu > li > a:focus,
+/*活跃时的状态*/
+#sidebar .navigation-menu > li > a:active {
+    color: #71b6f9;
+}
+
+/*
+位于#sidebar元素内的.navigation-menu类中的<li>元素下的所有<a>元素内的<i>元素的样式：
+
+<div id="sidebar">
+    <ul class="navigation-menu">
+        <li><a href="#"><i class="icon-home"></i> Home</a></li>
+        ...
+    </ul>
+</div>
+*/
+#sidebar .navigation-menu > li > a i {
+    font-size: 18px;
+    margin-right: 5px;
+    color: white;
+    vertical-align: middle;
+}
+/*子菜单*/
+#sidebar .navigation-menu > li .submenu {
+    display: none;
+    list-style: none;
+    padding-left: 20px;
+    margin: 0;
+}
+
+#sidebar .navigation-menu > li .submenu li a {
+    display: block;
+    padding: 7px 20px;
+    color: #949ba1;
+}
+
+#sidebar .navigation-menu > li .submenu li a:hover {
+    color: #71b6f9;
+}
+
+/*在具有子菜单的导航项的链接后添加一个图标或符号，以指示该项有进一步的子菜单*/
+#sidebar .navigation-menu > li .submenu li.has-submenu > a:after {
+    content: "\e649";
+    font-family: "themify";
+    position: absolute;
+    right: 20px;
+    font-size: 9px;
+}
+
+#sidebar .navigation-menu > li .submenu .submenu {
+    padding-left: 20px;
+}
+
+#sidebar .navigation-menu > li .submenu .submenu.open {
+    display: block;
+}
+
+/*用户信息框：定义了用户头像、用户状态图标及其不同状态（在线、离线等）的样式*/
+/*没有用到*/
+.user-box {
+    text-align: center;
+    padding: 20px;
+}
+
+.user-box .user-img {
+    position: relative;
+}
+
+.user-box .user-status {
+    height: 12px;
+    width: 12px;
+    position: absolute;
+    bottom: 8px;
+    right: 15px;
+    line-height: 0px !important;
+}
+
+.user-box .user-status i {
+    font-size: 12px !important;
+}
+
+.user-box .user-status.away i {
+    color: #f9c851;
+}
+
+.user-box .user-status.offline i {
+    color: #ff5b5b;
+}
+
+.user-box .user-status.online i {
+    color: #10c469;
+}
+
+.user-box .user-status.busy i {
+    color: #98a6ad;
+}
+
+/*底部区域的样式*/
+.footer {
+    border-top: 1px solid rgba(67, 89, 102, 0.1);
+    color: #58666e;
+    text-align: center;
+    padding: 20px;
+    position: fixed;
+    bottom: 0;
+    left: 240px;
+    right: 0;
+    background-color: #1a2023;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+}
+
+.footer ul li {
+    padding: 0 10px;
+}
+
+.footer ul li a {
+    color: #98a6ad;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.footer ul li a:hover {
+    color: #71b6f9;
+}

@@ -4,11 +4,13 @@ Author: CoderThemes
 Email: coderthemes@gmail.com
 File: Menu
 */
+/*顶部导航栏logo属性*/
 .logo {
   color: #ffffff !important;
   font-size: 32px;
   margin-top: 8px;
   font-family: 'Rancho', cursive;
+  /*font-family: 'Roboto', sans-serif; !* 更换字体为 Roboto *!*/
   float: left;
 }
 .logo span span {
@@ -162,14 +164,19 @@ File: Menu
   -webkit-transform: rotate(-45deg);
   transform: rotate(-45deg);
 }
+
 #topnav .navigation-menu {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
 }
 #topnav .navigation-menu > li {
   float: left;
+  /*float: none;*/
   display: block;
+  /*margin-bottom: 10px;*/
   position: relative;
 }
 #topnav .navigation-menu > li > a {
@@ -181,11 +188,15 @@ File: Menu
   padding-left: 25px;
   padding-right: 25px;
 }
+/*鼠标悬停时的效果*/
 #topnav .navigation-menu > li > a:hover {
-  color: #71b6f9;
+  /*color: #71b6f9;*/
+  color: #0eac5c;
 }
 #topnav .navigation-menu > li > a:hover i {
-  color: #71b6f9;
+  /*color: #71b6f9;*/
+  color: #0eac5c;
+
 }
 #topnav .navigation-menu > li > a:focus {
   color: #71b6f9;
@@ -325,6 +336,11 @@ File: Menu
   #topnav .navigation-menu {
     float: none;
     max-height: 400px;
+    /*list-style: none;*/
+    /*margin: 0;*/
+    /*padding: 0;*/
+    /*display: flex;*/
+    /*flex-direction: column;*/
   }
   #topnav .navigation-menu > li {
     float: none;

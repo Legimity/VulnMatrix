@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+{% block css %}
+<style>
+    .card-box {
+        background-color: #3b4856;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        color: #eaeaea;
+        text-align: center;
+        margin-left: -285px;
+        margin-top: -70px;
+        width: 1000px;
+        height: 600px;
+    }
+
+    .header-title {
+        margin: 0 0 15px;
+        font-size: 18px;
+        font-weight: 600;
+        position: relative;
+    }
+
+    .header-title #io {
+        position: absolute;
+        right: 20px;
+        top: 0;
+        font-size: 14px;
+    }
+
+    .widget-chart {
+        margin: 20px 0;
+    }
+
+    .content-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh; /* 让内容在垂直方向上居中 */
+    }
+</style>
+{% end %}
+
+{% block webinfo %}
+<div class="content-center">
+    <div class="col-lg-4">
+        <div class="card-box">
+            <h4 class="header-title m-t-0"><span id="io"></span>
+            </h4>
+            <div id="pie_ios">
+                <div class="widget-chart text-center">
+                    <canvas id="pie_io" height="235" width="235"></canvas>
+                </div>
+            </div>
+        </div>
+    </div><!-- end col -->
+</div>
+{% end %}
