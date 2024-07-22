@@ -1510,7 +1510,7 @@ div.hopscotch-bubble .hopscotch-bubble-arrow-container.down .hopscotch-bubble-ar
    Accounts pages
 ============= */
 .account-pages {
-  background: url("../images/big/bg1.jpg") center;
+  background: url("../images/big/seu5.jpg") center;  /* background of login page*/
   position: absolute;
   height: 100%;
   width: 100%;
@@ -1518,7 +1518,7 @@ div.hopscotch-bubble .hopscotch-bubble-arrow-container.down .hopscotch-bubble-ar
 }
 
 .account-pages2 {
-  background: url("../images/big/bg2.jpg") center;
+  background: url("../images/big/seu2.jpg") center;  /*background of search page*/
   position: absolute;
   height: 100%;
   width: 100%;
