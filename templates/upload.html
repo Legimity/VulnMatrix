@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload YML File</title>
+</head>
+<body>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file1" />
+        <input type="submit" value="Upload" />
+    </form>
+    
+    <!-- 根据上传的docker-compose启动环境 -->
+    <button id="dockerComposeUpBtn">Docker-compose up</button>
+
+    <script>
+        document.getElementById('dockerComposeUpBtn').addEventListener('click', function() {
+            fetch('/boot_docker_compose', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({action: 'trigger'})
+            })
+            .then(response => response.text())
+            .then(data => alert(data))
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
