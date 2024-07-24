@@ -332,9 +332,6 @@ class ImagesHandler(BaseHandler):
 
         images_count = self.db_select('SELECT id FROM tb_images')
 
-        # sql = 'SELECT images_id FROM tb_status WHERE containers_user = ? AND containers_status = "runing";'
-        # statrt_result = self.db_select(sql, [self.current_user.decode()])
-
         result = []
 
         for x in images_result:
