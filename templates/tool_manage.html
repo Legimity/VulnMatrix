@@ -1,0 +1,435 @@
+{% extends "layout.html" %}
+{% block css %}
+<!-- Xterm js CDN依赖 -->
+<script src="https://unpkg.com/xterm@4.18.0/lib/xterm.js"></script>
+<!-- Xterm js 显示 CDN依赖 -->
+<script src="https://unpkg.com/xterm-addon-fit@0.6.0/lib/xterm-addon-fit.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/xterm@4.18.0/css/xterm.css">
+
+<style>
+    /* 滑动窗口容器样式 */
+    .tool-scroll-container {
+        height: 340px;
+    }
+
+    /* 工具列表和项样式 */
+    .local-tools-list .remote-tools-list {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    /* 工具列表样式 */
+    .local-tools-list,
+    .remote-tools-list {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    .tool-button-container {
+        width: calc(33.3% - 10px);
+        margin: 5px;
+        box-sizing: border-box;
+    }
+
+    .tool-button {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: none;
+        background-color: #f8f8f8;
+        color: #333;
+        text-align: center;
+        cursor: pointer;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s, box-shadow 0.3s;
+    }
+
+    .tool-button:hover {
+        background-color: #e9e9e9;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .tool-name {
+        font-weight: bold;
+    }
+
+    h5 {
+        margin-bottom: 15px;
+        font-size: 16px;
+        color: white;
+    }
+
+
+    .tab-headers {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+    }
+
+    .tab-headers li {
+        padding: 10px 10px;
+        cursor: pointer;
+        font-size: medium;
+        border-radius: 5px;
+        /* 圆角边框 */
+        color: white;
+        /* 字体颜色 */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        /* 阴影效果 */
+        transition: background-color 0.3s, box-shadow 0.3s;
+        /* 过渡效果 */
+    }
+
+    .tab-headers li:hover {
+        background-color: grey;
+        /* 悬停效果 */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        /* 加强阴影 */
+    }
+
+    .tab-headers li.active {
+        background-color: #188ae2 !important;
+        /* 选中状态的背景色 */
+        color: white !important;
+        /* 选中状态的字体颜色 */
+    }
+
+    .tab-content {
+        padding: 0 !important;
+        border: 0.5px solid #555 !important;
+
+        border-radius: 5px !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+        background-color: white !important;
+    }
+
+    .xterm-viewport {
+        overflow: hidden !important;
+    }
+
+    .close-tab-btn {
+        background-color: transparent;
+    }
+
+    .close-tab-btn :hover {
+        background-color: #188ae2;
+    }
+</style>
+{% end %}
+
+{% block webinfo %}
+<div class="container">
+    <div class="row h-100"> <!-- 设置行高度为整个视口高度 -->
+        <div class="col-lg-4 col-md-6 h-100"> <!-- 占据半个屏幕宽度和整个屏幕高度 -->
+            <div class="card-box widget-user h-100"> <!-- 使卡片盒高度为100% -->
+                <div class="text-center h-100">
+                    <h4 style="font-family:'Rancho'; font-size:28px; text-align:left">Quick Start</h4>
+                </div>
+                <div class="tool-scroll-container">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h5>本地工具</h5>
+                        <!-- 按钮触发模态框 -->
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+                            添加工具
+                        </button>
+                    </div>
+                    <div class="local-tools-list"> <!-- 工具列表 -->
+                        <!-- 工具项，您可以根据需要添加更多 -->
+                        {% for index, (tool, path) in enumerate(tools['local'].items()) %}
+                        <div class="tool-button-container">
+                            <button class="tool-button" onclick="startLocalTool('{{ path }}')">
+                                <span class="tool-name">{{ tool }}</span> <!-- 工具名称 -->
+                            </button>
+                        </div>
+                        {% end %}
+                    </div>
+                </div>
+                <div class="tool-scroll-container">
+                    <h5>远程工具</h5>
+                    <div class="remote-tools-list"> <!-- 工具列表 -->
+                        <!-- 工具项，您可以根据需要添加更多 -->
+                        {% for index, (tool, path) in enumerate(tools['remote'].items()) %}
+                        <div class="tool-button-container">
+                            <button class="tool-button" onclick="addTab('{{ tool }}')">
+                                <span class="tool-name">{{ tool }}</span> <!-- 工具名称 -->
+                            </button>
+                        </div>
+                        {% end %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 终端 -->
+        <div class="col-lg-8 col-md-6 h-100"> <!-- 占据半个屏幕宽度和整个屏幕高度 -->
+            <ul class="tab-headers">
+                <!-- 标签页头部，动态添加 -->
+            </ul>
+            <div class="tab-contents">
+                <!-- 标签页内容，动态添加 -->
+            </div>
+        </div>
+        <!-- 模态框 -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content" style="padding: 10px;">
+                    <div class="modal-header" style="padding: 5px;">
+                        <h5 class="modal-title" id="exampleModalLabel">添加工具</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="padding: 5px;">
+                        <form id="addToolForm">
+                            <div class="form-group">
+                                <label for="ToolName">工具名称:</label>
+                                <input type="text" class="form-control" id="ToolName" name="ToolName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="ToolPath">路径:</label>
+                                <input type="text" class="form-control" id="ToolPath" name="ToolPath" required>
+                                <!-- 隐藏的输入字段，用于存储文件路径 -->
+                            </div>
+                            <input type="submit" class="btn btn-primary" value="提交">
+                            <h5>TIP :命令行工具提供文件所在目录路径,EXE文件提供文件所在路径</h5>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>]
+    </div>
+</div>
+
+{% end %}
+
+{% block js %}
+<!-- 引入Bootstrap Bundle JavaScript (包括Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 只提交文件路径 不提交文件
+    // 给模态框添加JavaScript逻辑
+    document.getElementById('addToolForm').onsubmit = function (event) {
+        event.preventDefault(); // 阻止表单默认提交行为
+        var ToolName = document.getElementById('ToolName').value;
+        var ToolPath = document.getElementById('ToolPath').value;
+        console.log('ToolName: ' + ToolName + ', ToolPath: ' + ToolPath);
+        // 发送Ajax请求  
+        $.ajax({
+            url: "/tool_manage", //要请求的后端地址
+            type: "PUT", //
+            data: JSON.stringify({ exeName: ToolName, exePath: ToolPath }), //需要传递的参数
+            dataType: "json", //后端返回的数据格式
+            contentType: "application/json", //这个必须，不然后台接受时会出现乱码现象
+            success: function (result) {//ajax请求成功后触发的方法
+                console.log('Send Request Success..');
+                console.log(result);
+                // // 文件下载
+                var data = result['content']; // 可能需要根据实际情况对数据进行处理
+                var fileName = result['filename']; // 设置下载的文件名
+
+                // 创建Blob对象
+                var blob = new Blob([data], { type: "text/plain" });
+
+                // 创建指向Blob的URL
+                var url = window.URL.createObjectURL(blob);
+
+                // 创建<a>元素并设置属性
+                var a = document.createElement("a");
+                a.href = url;
+                a.download = fileName;
+
+                // 模拟点击<a>元素以触发下载
+                document.body.appendChild(a); // 将<a>元素添加到页面中
+                a.click();
+                // 清理
+                window.URL.revokeObjectURL(url); // 释放URL对象
+                document.body.removeChild(a); // 从页面中移除<a>元素
+            },
+            error: function () {//ajax请求失败后触发的方法
+                console.log('Send Request Fail..');
+            }
+        });
+        $('#exampleModal').modal('hide'); // 隐藏模态框
+    };
+</script>
+<script>
+    // 工具调用
+    function detectOS() {
+        const userAgent = window.navigator.userAgent;
+        if (userAgent.indexOf('Windows') !== -1) {
+            return true;
+        } else if (userAgent.indexOf('Mac OS X') !== -1) {
+            return false;
+        } else if (userAgent.indexOf('Linux') !== -1) {
+            return false;
+        } else if (userAgent.indexOf('CrOS') !== -1) {
+            return false;
+        } else if (userAgent.indexOf('Android') !== -1) {
+            return false;
+        } else if (userAgent.indexOf('iPhone') !== -1 || userAgent.indexOf('iPad') !== -1) {
+            return false;
+        } else {
+            return false;
+        }
+    }
+
+    // 本地工具调用
+    function startLocalTool(path) {
+        detectOS() ? window.open(path + "://") : alert('请在Windows系统下使用本地工具');
+    }
+
+    // 远程工具调用
+    function sendCommandToBackend(command) {
+        socket.send(command);
+    }
+
+    // 修改startRemoteTool函数，使用sendCommandToBackend发送命令
+    function startRemoteTool(path) {
+        const command = `cd ${path}\r`;
+        sendCommandToBackend(command);
+    }
+</script>
+<script src="static/plugin/sweetalert/sweetalert.min.js"></script>
+<script src="static/js/dropify.min.js"></script>
+<script src="static/js/ajaxfileupload.js"></script>
+<script src="static/buss/js/plugin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<script>
+
+
+    // 多终端实现
+    function addTab(toolName) {
+        const tabHeaders = document.querySelector('.tab-headers');
+        // console.log(tabHeaders)
+        const tabContents = document.querySelector('.tab-contents');
+        // console.log(tabContents)
+        // 如果已经打开了这个工具 不再打卡 而是回到这个工具
+        for (let i = 0; i < tabHeaders.children.length; i++) {
+            if (tabHeaders.children[i].textContent === toolName) {
+                tabHeaders.children[i].click();
+                return;
+            }
+        }
+
+        // 创建新的标签页头部
+        const newTabHeader = document.createElement('li');
+        newTabHeader.setAttribute('data-tab-target', toolName + 'Content'); // 确保使用正确的属性名
+
+        const tabinfo = document.createElement('span');
+        tabinfo.textContent = toolName;
+        tabinfo.style.margin = '0 5px';
+        newTabHeader.appendChild(tabinfo);
+
+
+        // 关闭按钮
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'close-tab-btn';
+        closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        closeBtn.style.justifyContent = 'right';
+        closeBtn.style.border = 'none'; // 去掉边框
+        closeBtn.onclick = function () {
+            const tabHeader = this.parentElement;
+            const tabContentId = tabHeader.getAttribute('data-tab-target');
+            const tabContent = document.getElementById(tabContentId);
+            tabHeader.remove();
+            tabContent.remove();
+            // 重新激活剩余的标签
+            const nextTab = tabHeaders.children[tabHeaders.children.length - 1];
+            if (nextTab) {
+                nextTab.click()
+            }
+            // 防止事件向上传播
+            event.stopPropagation();
+        };
+        newTabHeader.appendChild(closeBtn);
+        tabHeaders.appendChild(newTabHeader);
+
+
+        // 终端页面
+        document.querySelectorAll('.tab-content').forEach(tabContent => {
+            tabContent.style.display = 'none';
+        });
+        // 创建新的标签页内容
+        const newTabContent = document.createElement('div');
+        newTabContent.id = toolName + 'Content';
+        newTabContent.classList.add('tab-content');
+        tabContents.appendChild(newTabContent);
+        // 初始化xterm
+        initializeXterm(newTabContent.id);
+
+        // 为新标签页头部添加点击事件监听器
+        newTabHeader.addEventListener('click', function () {
+            console.log('click',this);
+            let tabHeader = document.querySelector('.tab-headers').children;
+            for (let i = 0; i < document.querySelector('.tab-headers').children.length; i++) {
+                tabHeader[i].classList.remove('active');
+            }
+            document.querySelectorAll('.tab-content').forEach(tabContent => {
+                tabContent.style.display = 'none';
+            });
+            this.setAttribute('class', 'active');
+            // 显示当前标签页对应的内容
+            const targetId = this.getAttribute('data-tab-target');
+            const targetContent = document.getElementById(targetId);
+            if (targetContent) {
+                targetContent.style.display = 'block';
+            }
+        });
+
+        newTabHeader.click();
+    }
+
+    function initializeXterm(containerId) {
+        const terminal = new Terminal({
+            fontSize: 18,
+            fontFamily: 'monospace',
+            rendererType: 'canvas', // 渲染类型
+            convertEol: true, // 启用时，光标将设置为下一行的开头
+            cursorBlink: true, // 光标闪烁
+            theme: {
+                foreground: '#ECECEC', // 字体颜色
+                background: '#000000', // 背景色
+                lineHeight: 20
+            }
+        }
+        );
+        const fitAddon = new FitAddon.FitAddon();
+        terminal.loadAddon(fitAddon);
+        const container = document.getElementById(containerId);
+        terminal.open(container);
+        fitAddon.fit();
+        // 为每个终端创建独立的WebSocket连接
+        const socket = new WebSocket(`ws://${window.location.host}/ws`);
+        socket.onopen = function () {
+            terminal.onData(data => {
+                socket.send(data);
+            });
+            socket.onmessage = function (event) {
+                terminal.write(event.data);
+            };
+        };
+
+        socket.onclose = function (e) {
+            console.log('WebSocket连接已关闭: ', e.reason);
+        };
+        socket.onerror = function (err) {
+            console.error('WebSocket错误: ', err);
+        };
+    }
+
+
+    // 默认打开一个Terminal终端
+    $(document).ready(function () {
+        addTab('Terminal');
+    })
+</script>
+{% end %}

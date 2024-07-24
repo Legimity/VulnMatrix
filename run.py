@@ -1,13 +1,3 @@
-#! coding=utf-8
-
-
-'''
-    常见漏洞的总结，可以在此项目里练习各种常见的web漏洞。
-    使用docker作为漏洞的容器，使用python调用容器，在web界面可以管理容器，开启，关闭。使用tornado框架开发web界面。
-
-'''
-
-
 import os
 import sqlite3
 import hashlib
@@ -24,7 +14,7 @@ import tornado.websocket
 
 # from docker_lib import Dockers_Start, Dockers_Stop, Dockers_Info
 from docker_lib import Dockers_Start, Dockers_Stop, Dockers_Info,Docker_ComposeControl
-from system_info import Start_Get_Sysinfo
+from utils import Start_Get_Sysinfo
 from log.logger import logger
 from tornado.options import define, options
 import dotenv
@@ -40,6 +30,10 @@ from handlers.LoginHandler import LoginHandler, LogoutHandler, HomeHandler
 from handlers.BaseHandler import BaseHandler, ErrorHandler,Reset_System_Handler,SettingHandler,HomeHandler
 from handlers.SocketHandler import SocketHandler
 from handlers.PassHandler import Change_Pass_Handler
+from handlers.ViewNetworkHandler import ViewNetworkHandler
+from handlers.ToolManagerHandler import ToolManagerHandler
+from handlers.TreminalWebSocketHandler import TreminalWebSocketHandler
+
 
 try:
     from Queue import Queue
@@ -56,7 +50,7 @@ Sys_Pass = 'admin123'
 # Tornado 框架中的 define 函数定义命令行选项 python run.py --port=8080
 define("port", default = 8000, help = "run on the given port", type = int)
 define("host", default = '0.0.0.0',help = "run on the given host", type = str)
-define("sqlite_path", default = "./test.db", help = "database path")
+define("sqlite_path", default = "./DB/test.db", help = "database path")
 
 
 class Application(tornado.web.Application):
@@ -76,7 +70,8 @@ class Application(tornado.web.Application):
 
             (r"/logout", LogoutHandler),
             (r"/stop_all_containers", StopAllContainers),
-
+            # TODO 网络拓扑的接口
+            (r"/view", ViewNetworkHandler),
             (r"/search_images", SearchImagesHandler),
             (r"/images_info", ImagesHandler),
             (r"/status_info", StatusHandler),
@@ -99,6 +94,10 @@ class Application(tornado.web.Application):
             # 新建靶场环境,复制自AddImagesHandler
             (r"/add_envs", AddEnvsHandler),
             (r"/stop_envs", StopEnvsHandler),#TODO
+            
+           
+            (r"/tool_manage", ToolManagerHandler),
+            (r"/ws", TreminalWebSocketHandler),
 
             # 来自StartContainersHandler
             (r"/start_envs", StartEnvsHandler),
@@ -413,6 +412,7 @@ class ShowRangesHandler(BaseHandler):
         # self.render('upload.html', cursor = result, count = len(result_count))
         self.render('envs.html', cursor = result, count = len(result_count))
 
+
 class StatusHandler(BaseHandler):
     '''
     显示获取的系统信息和开启的容器信息。
@@ -432,9 +432,6 @@ class StatusHandler(BaseHandler):
 
         logger.info('获取用户%s已开启的镜像名字和端口' % self.current_user.decode())
         self.render('status.html', sysinfo = self.status, cursor = status_result, start_counts = len(status_result), images_counts = len(images_result))
-
-
-
 
 
 
@@ -1068,6 +1065,8 @@ class Add_User_Handler(BaseHandler):
             return
 
         self.render('setting.html', error = '加入用户成功！')
+
+
 
 
 
