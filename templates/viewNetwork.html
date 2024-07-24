@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>vis.js</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script type="text/javascript" src="https://ss1.bdstatic.com/5eN1bjq8AAUYm2zgoY3K/r/www/cache/static/protocol/https/jquery/jquery-1.10.2.min_65682a2.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style type="text/css">
+        #mynetwork {
+            width: 100%;
+            height: 600px;
+            border: 1px solid lightgray;
+        }
+        *{padding: 0;margin: 0;}
+        .menu{
+            position: absolute;
+            background: rgba(3,3,3,0.6);
+            border-radius: 5px;
+            left: -99999px;
+            top: -999999px;
+        }
+        .menu ul{list-style: none}
+        .menu ul li{
+            padding: 5px 10px;
+            color: #ffff;
+            border-bottom: 1px solid #ffffff;
+            font-size: 14px;
+            cursor: pointer;
+            list-style: none;
+        }
+        .menu ul li:hover{
+            color: #659bc5;
+        }
+        .menu ul li:last-child{
+            border-bottom: none;
+            padding: 5px 10px 0 10px;
+        }
+        canvas{
+            cursor:pointer;
+        }
+    </style>
+</head>
+<body>
+<div id="mynetwork"></div>
+<!--菜单操作-->
+<div id="menuOperation" class="menu" style="display: none;">
+    <ul>
+        <li><span class="glyphicon glyphicon-off" aria-hidden="true"></span> 下线</li>
+        <li><span class="glyphicon glyphicon-road" aria-hidden="true"></span> 通行</li>
+    </ul>
+</div>
+<!--节点悬停-->
+<div class="menu" id="divHoverNode" style="display: none;">
+</div>
+<script type="text/javascript">
+    var allNodes = [
+        {id: 1, name: "攻击者网络", label: "攻击者网络", type: "attacker", ip: "211.165.2.89", medi: "false", port: "未知", pid: 1, subids: [2], x: '3px', y: '20px'},
+        {id: 2, name: "Router", label: "Router", type: "router", ip: "172.16.0.0", medi: "false", port: "未知", pid: 1, subids: [3, 5, 8]},
+        {id: 3, name: "Switch_net1", label: "Switch_net1", type: "switch", ip: "172.16.1.0", medi: "false", port: "未知", pid: 2, subids: [4]},
+        {id: 4, name: "shiro", label: "shiro", type: "target", ip: "172.16.1.10", port: "8001:8080", group: "net1", pid: 3, medi: "false"},
+        {id: 5, name: "Switch_net2", label: "Switch_net2", type: "switch", ip: "172.16.2.0", medi: "false", port: "未知", pid: 2, subids: [6, 7]},
+        {id: 6, name: "tomcat", label: "tomcat", type: "target", ip: "172.16.2.10", port: "8080", group: "net2", pid: 5, medi: "false"},
+        {id: 7, name: "weblogic", label: "weblogic", type: "target", ip: "172.16.2.11", port: "7001:5556", group: "net2", pid: 5, medi: "false"},
+        {id: 8, name: "Switch_net3", label: "Switch_net3", type: "switch", ip: "172.16.3.0", medi: "false", port: "未知", pid: 2, subids: [9]},
+        {id: 9, name: "jboss", label: "jboss", type: "target", ip: "172.16.3.10", port: "9990:8080", group: "net3", pid: 8, medi: "false"}
+    ];
+
+    var allEdges = [
+        { id: "1_6", from: 1, to: 6 },
+        { id: "2_3", from: 2, to: 3 },
+        { id: "2_5", from: 2, to: 5 },
+        { id: "2_8", from: 2, to: 8 },
+        { id: "3_4", from: 3, to: 4 },
+        { id: "5_6", from: 5, to: 6 },
+        { id: "5_7", from: 5, to: 7 },
+        { id: "8_9", from: 8, to: 9 }
+    ];
+
+    // 自定义图片
+    for (var i = 0; i < allNodes.length; i++) {
+        if (allNodes[i].type == 'attacker') {
+            allNodes[i].image = 'static/images/attacker.png';
+        }
+        if (allNodes[i].type == 'switch') {
+            allNodes[i].image = 'static/images/switch.png';
+        }
+        if (allNodes[i].type == 'router') {
+            allNodes[i].image = 'static/images/router.png';
+        }
+        if (allNodes[i].type == 'target') {
+            allNodes[i].image = 'static/images/target.png';
+        }
+    }
+
+    // 获取容器
+    var container = document.getElementById('mynetwork');
+    // 创建节点对象
+    var nodes = new vis.DataSet(allNodes);
+    // 创建连线对象
+    var edges = new vis.DataSet(allEdges);
+    // 将数据赋值给vis 数据格式化器
+    var data = {
+        nodes: nodes,
+        edges: edges
+    };
+
+    var options = {
+        nodes: {
+            shape: 'image'
+        },
+        interaction: {
+            hover: true,
+            navigationButtons: true,
+            dragNodes: true,
+            dragView: true,
+            hoverConnectedEdges: true,
+            multiselect: false,
+            selectable: false,
+            selectConnectedEdges: false,
+            hoverConnectedEdges: false,
+            zoomView: true
+        }
+    };
+
+    var network = new vis.Network(container, data, options);
+
+    // Event listener for node selection
+    network.on('selectNode', function(params) {
+        var selectedNodes = params.nodes;
+        if (selectedNodes.length > 1) {
+            // Remove existing dashed rectangles
+            var existingRects = document.querySelectorAll('.dashed-rectangle');
+            existingRects.forEach(rect => rect.parentNode.removeChild(rect));
+
+            // Draw dashed rectangle around selected nodes
+            drawDashedRectangle(selectedNodes);
+        }
+    });
+
+    // CSS for dashed rectangle
+    var style = document.createElement('style');
+    style.innerHTML = `
+      .dashed-rectangle {
+        position: absolute;
+        border: 2px dashed #999;
+        pointer-events: none; /* Ensure the rectangle doesn't intercept mouse events */
+        box-sizing: border-box;
+      }
+    `;
+    document.head.appendChild(style);
+
+    function drawDashedRectangle(nodesIds) {
+        var positions = nodesIds.map(function(id) {
+            return network.getPositions([id])[id];
+        });
+
+        var minX = Math.min(...positions.map(pos => pos.x));
+        var maxX = Math.max(...positions.map(pos => pos.x));
+        var minY = Math.min(...positions.map(pos => pos.y));
+        var maxY = Math.max(...positions.map(pos => pos.y));
+
+        var rect = document.createElement('div');
+        rect.className = 'dashed-rectangle';
+        rect.style.left = minX + 'px';
+        rect.style.top = minY + 'px';
+        rect.style.width = (maxX - minX) + 'px';
+        rect.style.height = (maxY - minY) + 'px';
+
+        container.appendChild(rect);
+    }
+
+    function getNode(option) {
+        for (var i = 0; i < allNodes.length; i++) {
+            if (option == allNodes[i].id) {
+                return allNodes[i];
+            }
+        }
+    }
+
+    function getEdge(option) {
+        var linkId = option;
+        linkId = linkId.split('_');
+        var linkIdFirst = linkId[0];
+        var linkIdLast = linkId[1];
+        var dataList = [];
+        for (var j = 0; j < allNodes.length; j++) {
+            if (linkIdFirst == allNodes[j].id || linkIdLast == allNodes[j].id) {
+                dataList.push(allNodes[j]);
+            }
+        }
+        return dataList;
+    }
+
+    network.on('hoverNode', function(properties) {
+        var hoveNodeList = getNode(properties.node);
+        var deviceType = hoveNodeList.type;
+        var imgPathSrc = hoveNodeList.image;
+        var medi = hoveNodeList.medi;
+        if (deviceType == "attacker") {
+            var $ul = "<ul>"
+                + "<li><img src=' " + imgPathSrc + " ' width='30px' height='25px'><span> " + hoveNodeList.name + " </span> </li>"
+                + "</ul>";
+            $("#divHoverNode").append($ul);
+        } else if (deviceType == "switch" || deviceType == "router") {
+            var $ul = "<ul>"
+                + "<li><img src=' " + imgPathSrc + " ' width='30px' height='25px'><span> " + hoveNodeList.name + " </span> </li>"
+                + "<li>IP：" + hoveNodeList.ip + "</li>"
+                + "<li>PORT：" + hoveNodeList.port + "</li>"
+                + "</ul>";
+            $("#divHoverNode").append($ul);
+        } else {
+            if (medi == "true") {
+                var $ul = "<ul>"
+                    + "<li><img src=' " + imgPathSrc + " ' width='30px' height='25px'><span> " + hoveNodeList.name + " </span> </li>"
+                    + "<li>IP1：" + hoveNodeList.net1 + "</li>"
+                    + "<li>IP2：" + hoveNodeList.net2 + "</li>"
+                    + "<li>PORT：" + hoveNodeList.port + "</li>"
+                    + "</ul>";
+            } else {
+                var $ul = "<ul>"
+                    + "<li><img src=' " + imgPathSrc + " ' width='30px' height='25px'><span> " + hoveNodeList.name + " </span> </li>"
+                    + "<li>IP：" + hoveNodeList.ip + "</li>"
+                    + "<li>PORT：" + hoveNodeList.port + "</li>"
+                    + "</ul>";
+            }
+            $("#divHoverNode").append($ul);
+        }
+        $('#divHoverNode').css({
+            'display': 'block',
+            'left': properties.event.offsetX + 15,
+            'top': properties.event.offsetY + 15
+        });
+        $('#menuOperation').hide();
+    });
+
+    network.on('blurNode', function() {
+        $("#divHoverNode").hide();
+        $("#divHoverNode").empty();
+    });
+
+    network.on('hoverEdge', function(properties) {
+        var hoveEdgeList = getEdge(properties.edge);
+        var $ul = "<ul>"
+            + "<li>名称：" + hoveEdgeList[0].name + "->" + hoveEdgeList[1].name + "</li>";
+        var stringP = "<li>连接：";
+        if (hoveEdgeList[0].medi == "true") {
+            stringP += hoveEdgeList[0].net2;
+        } else {
+            stringP += hoveEdgeList[0].ip;
+        }
+        stringP += "->";
+        if (hoveEdgeList[1].medi == "true") {
+            stringP += hoveEdgeList[1].net1;
+        } else {
+            stringP += hoveEdgeList[1].ip;
+        }
+        $ul += stringP;
+        $ul += "</ul>";
+        $("#divHoverNode").append($ul);
+        $('#divHoverNode').css({
+            'display': 'block',
+            'left': properties.event.offsetX + 15,
+            'top': properties.event.offsetY + 15
+        });
+        $('#menuOperation').hide();
+    });
+
+    network.on('blurEdge', function(properties) {
+        $("#divHoverNode").hide();
+        $("#divHoverNode").empty();
+    });
+
+    network.on('click', function(properties) {
+        var clickNodeList = getNode(properties.nodes[0]);
+        if (typeof(clickNodeList) == "undefined") {
+            $('#menuOperation').hide();
+        } else {
+            $('#menuOperation').css({
+                'display': 'block',
+                'left': properties.event.center.x + 15,
+                'top': properties.event.center.y + 15
+            });
+            $("#divHoverNode").hide();
+        }
+    });
+
+    network.on("doubleClick", function(params) {
+        if (params.nodes.length != 0) {
+            var click_node_id = params.nodes[0];
+            remove_all_sub_nodes(click_node_id            );
+        }
+    });
+
+    function remove_all_sub_nodes(node_id) {
+        var sub_nodes = get_directly_sub_nodes(node_id);
+        if (sub_nodes.length == 0) {
+            if (typeof (allNodes[node_id - 1]['subids']) != 'undefined') {
+                $.each(allNodes[node_id - 1]['subids'], function(index, item) {
+                    nodes.add(allNodes[item - 1]);
+                    edges.add({id: node_id + '_' + item, from: node_id, to: item});
+                });
+            } else {
+                alert('当前为叶子节点');
+            }
+        } else {
+            $.each(sub_nodes, function(index, item) {
+                var sub_sub_nodes = get_directly_sub_nodes(item);
+                if (sub_sub_nodes.length == 0) {
+                    nodes.remove({id: item});
+                    edges.remove({id: node_id + '_' + item});
+                } else {
+                    remove_all_sub_nodes(item);
+                }
+                nodes.remove({id: item});
+                edges.remove({id: node_id + '_' + item});
+            });
+        }
+    }
+
+    function get_directly_sub_nodes(node_id) {
+        var return_nodes = [];
+        var connectedNodes = network.getConnectedNodes(node_id);
+        $.each(connectedNodes, function(index, item) {
+            if (item != allNodes[node_id - 1]['pid']) {
+                return_nodes.push(item);
+            }
+        });
+        return return_nodes;
+    }
+</script>
+</body>
+</html>
