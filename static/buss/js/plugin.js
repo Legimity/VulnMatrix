@@ -10,18 +10,21 @@ $('.dropify').dropify({
   }
 });
 
-// $('#up-type').change(function () {
-//   if ($(this).val() == 'json') {
-//     $('.uploadjson').css('display', '');
-//     $('.uploadfile').css('display', 'none');
-//   } else if ($(this).val() == 'file') {
-//     $('.uploadjson').css('display', 'none');
-//     $('.uploadfile').css('display', '');
-//   } else {
-//     $('.uploadjson').css('display', 'none');
-//     $('.uploadfile').css('display', 'none');
-//   }
-// });
+$('#up-type').change(function () {
+  if ($(this).val() == 'json') {
+    $('.uploadjson').css('display', '');
+    $('.uploadfile').css('display', 'none');
+  } else if ($(this).val() == 'file') {
+    $('.uploadjson').css('display', 'none');
+    $('.uploadfile').css('display', '');
+  } else if ($(this).val() == 'docker-compose') {
+    $('.uploadjson').css('display', '');
+    $('.uploadfile').css('display', 'none');
+  } else {
+    $('.uploadjson').css('display', 'none');
+    $('.uploadfile').css('display', 'none');
+  }
+});
 
 
 
