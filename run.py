@@ -282,15 +282,14 @@ class ImagesHandler(BaseHandler):
 
         images_count = self.db_select('SELECT id FROM tb_images')
 
-        sql = 'SELECT images_id FROM tb_status WHERE containers_user = ? AND containers_status = "runing";'
-        statrt_result = self.db_select(sql, [self.current_user.decode()])
+        # sql = 'SELECT images_id FROM tb_status WHERE containers_user = ? AND containers_status = "runing";'
+        # statrt_result = self.db_select(sql, [self.current_user.decode()])
 
         result = []
 
         for x in images_result:
-            if {'images_id': x['images_id']} not in statrt_result:
-                x['json_images_port'] = json.loads(x['images_port'])
-                result.append(x)
+            x['json_images_port'] = json.loads(x['images_port'])
+            result.append(x)
 
 
         logger.info('获取用户%s可以使用的镜像！' % self.current_user.decode())
@@ -355,23 +354,16 @@ class SearchImagesHandler(BaseHandler):
         sql = 'SELECT * FROM tb_images WHERE name LIKE upper(?) OR tags LIKE upper(?) OR info LIKE upper(?) OR author LIKE upper(?) OR types LIKE upper(?) LIMIT ?,?;'
         images_result = self.db_select(sql, ['%' + q + '%', '%' + q + '%', '%' + q + '%', '%' + q + '%', '%' + q + '%',  (page - 1) * page_size, page_size])
 
-        sql = 'SELECT images_id FROM tb_status WHERE containers_user = ? AND containers_status = "runing";'
-        statrt_result = self.db_select(sql, [self.current_user.decode()])
+        # sql = 'SELECT images_id FROM tb_status WHERE containers_user = ? AND containers_status = "runing";'
+        # statrt_result = self.db_select(sql, [self.current_user.decode()])
 
         result = []
         for x in images_result:
-            if {'images_id': x['images_id']} not in statrt_result:
-                x['json_images_port'] = json.loads(x['images_port'])
-                result.append(x)
-
-        result_count = []
-
-        for x in images_count:
-            if {'images_id': x['images_id']} not in statrt_result:
-                result_count.append(x)
+            x['json_images_port'] = json.loads(x['images_port'])
+            result.append(x)
 
         logger.info('获取用户%s搜索的可以使用的镜像！' % self.current_user.decode())
-        self.render('images.html', cursor = result, count = len(result_count))
+        self.render('images.html', cursor = result, count = len(images_count))
 
 # 展示已经开启的所有的靶场，复制自上面的SearchImagesHandler
 class ShowRangesHandler(BaseHandler):
@@ -393,24 +385,19 @@ class ShowRangesHandler(BaseHandler):
         sql = 'SELECT * FROM tb_images WHERE name LIKE upper(?) OR tags LIKE upper(?) OR info LIKE upper(?) OR author LIKE upper(?) OR types LIKE upper(?) LIMIT ?,?;'
         images_result = self.db_select(sql, ['%' + q + '%', '%' + q + '%', '%' + q + '%', '%' + q + '%', '%' + q + '%',  (page - 1) * page_size, page_size])
 
-        sql = 'SELECT images_id FROM tb_status WHERE containers_user = ? AND containers_status = "runing";'
-        statrt_result = self.db_select(sql, [self.current_user.decode()])
+        # sql = 'SELECT images_id FROM tb_status WHERE containers_user = ? AND containers_status = "runing";'
+        # statrt_result = self.db_select(sql, [self.current_user.decode()])
 
         result = []
         for x in images_result:
-            if {'images_id': x['images_id']} not in statrt_result:
-                x['json_images_port'] = json.loads(x['images_port'])
-                result.append(x)
+            x['json_images_port'] = json.loads(x['images_port'])
+            result.append(x)
 
-        result_count = []
 
-        for x in images_count:
-            if {'images_id': x['images_id']} not in statrt_result:
-                result_count.append(x)
 
         logger.info('获取用户%s搜索的可以使用的镜像！' % self.current_user.decode())
         # self.render('upload.html', cursor = result, count = len(result_count))
-        self.render('envs.html', cursor = result, count = len(result_count))
+        self.render('envs.html', cursor = result, count = len(images_count))
 
 
 class StatusHandler(BaseHandler):
@@ -956,12 +943,12 @@ class StartContainersHandler(BaseHandler):
             self.__get_port()
 
     def __start(self, images_id, port_containers):
-        sql = 'SELECT * FROM tb_status WHERE images_id = ? AND containers_user = ? AND containers_status = "runing" LIMIT 1;'
-        result = self.db_select(sql, [images_id, self.current_user.decode()])
-        if result :
-            port = json.loads(result[0]['containers_port'])
-
-            return port, result[0]['containers_id'], True
+        # sql = 'SELECT * FROM tb_status WHERE images_id = ? AND containers_user = ? AND containers_status = "runing" LIMIT 1;'
+        # result = self.db_select(sql, [images_id, self.current_user.decode()])
+        # if result :
+        #     port = json.loads(result[0]['containers_port'])
+        #
+        #     return port, result[0]['containers_id'], True
 
         port = {}
 
