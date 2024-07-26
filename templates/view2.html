@@ -91,7 +91,7 @@
         width: 1000px;
         height: 600px;
         position: relative;
-        {#z-index: 5;#}
+        {#z-index: 0;#}
     }
 
     .header-title {
@@ -126,7 +126,7 @@
         height: 600px;
         border: 1px solid lightgray;
         position: relative;
-        z-index: 10;
+        {#z-index: 10;#}
     }
 
     *{padding: 0;margin: 0;}
@@ -173,6 +173,7 @@
 {% end %}
 
 {% block webinfo %}
+<script type="text/javascript" src="https://ss1.bdstatic.com/5eN1bjq8AAUYm2zgoY3K/r/www/cache/static/protocol/https/jquery/jquery-1.10.2.min_65682a2.js"></script>
 <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 <div class="content-center">
     <div class="col-lg-4">
@@ -296,7 +297,7 @@
         var maxY = Math.max(...positions.map(pos => pos.y));
 
         var rect = document.createElement('div');
-        rect.className = 'dashed        -rectangle';
+        rect.className = 'dashed-rectangle';
         rect.style.left = minX + 'px';
         rect.style.top = minY + 'px';
         rect.style.width = (maxX - minX) + 'px';
@@ -328,6 +329,7 @@
     }
 
     network.on('hoverNode', function(properties) {
+        {#console.log('Node hovered:', properties.node); // Debugging line#}
         var hoveNodeList = getNode(properties.node);
         var deviceType = hoveNodeList.type;
         var imgPathSrc = hoveNodeList.image;
@@ -365,6 +367,7 @@
             'display': 'block',
             'left': properties.event.offsetX + 15,
             'top': properties.event.offsetY + 15
+            {#'z-index': '9999'#}
         });
         $('#menuOperation').hide();
     });
@@ -379,13 +382,13 @@
         var $ul = "<ul>"
             + "<li>名称：" + hoveEdgeList[0].name + "->" + hoveEdgeList[1].name + "</li>";
         var stringP = "<li>连接：";
-        if (hoveEdgeList[0].medi == "true") {
+        if (hoveEdgeList[0].medi === "true") {
             stringP += hoveEdgeList[0].net2;
         } else {
             stringP += hoveEdgeList[0].ip;
         }
         stringP += "->";
-        if (hoveEdgeList[1].medi == "true") {
+        if (hoveEdgeList[1].medi === "true") {
             stringP += hoveEdgeList[1].net1;
         } else {
             stringP += hoveEdgeList[1].ip;
