@@ -92,10 +92,10 @@ class SettingHandler(BaseHandler):
 
 
 
-class HomeHandler(BaseHandler):
-    '''
-    主页，搜索。
-    '''
-    @tornado.web.authenticated
-    def get(self):
-        self.render('search.html')
+# class HomeHandler(BaseHandler):
+#     '''
+#     主页，搜索。
+#     '''
+#     @tornado.web.authenticated
+#     def get(self):
+#         self.render('search.html')

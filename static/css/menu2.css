@@ -1,9 +1,9 @@
-
 .logo {
-    color: #ffffff !important;
-    font-size: 30px;
+    color: #0c7cd5 !important;
+    font-size: 35px;
     margin-top: 5px;
-    font-family: 'Raleway', sans-serif; /* 使用 Raleway 字体 */
+    /*font-family: 'Raleway', sans-serif; !* 使用 Raleway 字体 *!*/
+    font-family: Apple Chancery, cursive;
     text-align: left; /* 居中对齐 */
     padding: 20px;
 }

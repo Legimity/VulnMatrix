@@ -28,7 +28,7 @@ body .loader_overlay {
   width: 150px;
   height: 150px;
   background: transparent;
-/*  box-shadow: 0px 0px 0px 1000px rgba(255, 255, 255, 0.67), 0px 0px 19px 0px rgba(0, 0, 0, 0.16) inset;*/
+  /*box-shadow: 0px 0px 0px 1000px rgba(255, 255, 255, 0.67), 0px 0px 19px 0px rgba(0, 0, 0, 0.16) inset;*/
   border-radius: 100%;
   z-index: -1;
   position: absolute;
@@ -129,7 +129,6 @@ body .loader_cogs__left div.left_hole {
   border-radius: 100%;
   background: white;
   position: absolute;
-  position: absolute;
   left: 0;
   right: 0;
   top: 0;
@@ -173,7 +172,6 @@ body .loader_cogs__bottom div.bottom_hole {
   height: 30px;
   border-radius: 100%;
   background: white;
-  position: absolute;
   position: absolute;
   left: 0;
   right: 0;

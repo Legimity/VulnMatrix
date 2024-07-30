@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+{% block css %}
+<style>
+    .introduce-box {
+        height: 100vh;
+        margin-top: -130px;
+        margin-bottom: -130px;
+        text-align: center;
+        overflow-y: auto; /* 允许内容滚动 */
+        padding-top: 0; /* 控制顶部内边距 */
+        padding-bottom: 0; /* 控制底部内边距 */
+    }
+    .intro-content {
+        background-color: #2c3e50;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        color: #ecf0f1;
+        margin: 0 auto;
+        max-width: 100%; /* 控制内容宽度 */
+    }
+    .text-welcome {
+        color: #71b6f9;
+        text-shadow: rgba(113, 182, 249, 0.3) 5px 1px, rgba(113, 182, 249, 0.2) 12px 3px, rgba(113, 182, 249, 0.3) 6px 4px;
+        font-size: 98px;
+        font-weight: 700;
+        line-height: 150px;
+    }
+    .description {
+        margin-top: 20px;
+        text-align: left;
+        padding: 20px;
+    }
+    .description h3 {
+        font-size: 24px;
+        color: #1abc9c;
+    }
+    .description h4 {
+        font-size: 18px;
+        color: #3BAFDA;
+    }
+    .description h5 {
+        font-size: 17px;
+        color: #1abc9c;
+    }
+    .description p {
+        font-size: 16px;
+        color: #bdc3c7;
+    }
+    .nav-item {
+        margin-bottom: 10px;
+    }
+
+    .images {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+    }
+    .images img {
+        max-width: 45%;
+        height: auto;
+        margin: 10px;
+        border: 2px solid #1abc9c;
+        border-radius: 8px;
+    }
+</style>
+{% end %}
+
+{% block webinfo %}
+<div class="clearfix"></div>
+<div class="introduce-box">
+    <div class="intro-content">
+        <div class="text-welcome">Welcome</div>
+        <div class="description">
+            <h3>项目背景</h3>
+            <p>为避免因网络攻防演练和安全测试对业务系统造成的负面影响，要求基于国产操作系统等信创环境，利用虚拟仿真技术搭建网络安全测试验证环境，实现安全配置核查、安全策略评估、网络安全设备接入验证等风险评估分析功能。主要包括:<br>
+                1. 实现对目标网络环境的安全测试验证功能，包括探测网络目标场景的漏洞数量、漏洞类型、漏洞危险等级等内容，并对环境脆弱点进行整体评估，得出分析评估报告。<br>
+                2. 实现对各类设备防护成效的测试验证功能，通过对安全设备部署前后扫描渗透结果的横向对比，得出分析评估报告。</p>
+            <h3>简要介绍</h3>
+            <div class="images">
+                <img src="/static/images/intro1.png" alt="Image 1">
+                <img src="/static/images/intro2.png" alt="Image 2">
+            </div>
+        </div>
+        <br>
+    </div>
+</div>
+{% end %}

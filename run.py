@@ -26,8 +26,8 @@ print(PROJECT_PATH)
 
 
 # 尝试重构代码,从handlers中导入所有的handler，而不是全部写在同一个文件中
-from handlers.LoginHandler import LoginHandler, LogoutHandler, HomeHandler
-from handlers.BaseHandler import BaseHandler, ErrorHandler,Reset_System_Handler,SettingHandler,HomeHandler
+from handlers.LoginHandler import LoginHandler, LogoutHandler, HomeHandler, WelcomeHandler
+from handlers.BaseHandler import BaseHandler, ErrorHandler,Reset_System_Handler,SettingHandler
 from handlers.SocketHandler import SocketHandler
 from handlers.PassHandler import Change_Pass_Handler
 from handlers.ViewNetworkHandler import ViewNetworkHandler
@@ -65,14 +65,15 @@ class Application(tornado.web.Application):
 
         # tornado的路由信息
         handlers = [
-            (r"/", HomeHandler),
+            (r"/", WelcomeHandler),
+            (r"/home", HomeHandler),
             (r"/login", LoginHandler),
 
             (r"/logout", LogoutHandler),
             (r"/stop_all_containers", StopAllContainers),
             # TODO 网络拓扑的接口
             (r"/view", ViewNetworkHandler),
-            (r"/search_images", SearchImagesHandler),
+            # (r"/search_images", SearchImagesHandler),
             (r"/images_info", ImagesHandler),
             (r"/status_info", StatusHandler),
             (r"/websocket", SocketHandler),
@@ -336,42 +337,42 @@ class EnvsHandler(BaseHandler):
 
         self.render('envs.html', cursor = envs_result, count = len(envs_result))
         
-class SearchImagesHandler(BaseHandler):
-    '''
-    搜索镜像
-    '''
-
-    @tornado.web.authenticated
-    def get(self):
-        page = int(self.get_argument("page", 1))
-        q = self.get_argument('q', '')
-        if not q :
-            self.redirect('/images_info')
-            return
-        sql = 'SELECT * FROM tb_images WHERE name LIKE upper(?) OR tags LIKE upper(?) OR info LIKE upper(?) OR author LIKE upper(?) OR types LIKE upper(?) ;'
-        images_count = self.db_select(sql, ['%' + q + '%', '%' + q + '%', '%' + q + '%', '%' + q + '%', '%' + q + '%'])
-
-
-        sql = 'SELECT * FROM tb_images WHERE name LIKE upper(?) OR tags LIKE upper(?) OR info LIKE upper(?) OR author LIKE upper(?) OR types LIKE upper(?) LIMIT ?,?;'
-        images_result = self.db_select(sql, ['%' + q + '%', '%' + q + '%', '%' + q + '%', '%' + q + '%', '%' + q + '%',  (page - 1) * page_size, page_size])
-
-        sql = 'SELECT images_id FROM tb_status WHERE containers_user = ? AND containers_status = "runing";'
-        statrt_result = self.db_select(sql, [self.current_user.decode()])
-
-        result = []
-        for x in images_result:
-            if {'images_id': x['images_id']} not in statrt_result:
-                x['json_images_port'] = json.loads(x['images_port'])
-                result.append(x)
-
-        result_count = []
-
-        for x in images_count:
-            if {'images_id': x['images_id']} not in statrt_result:
-                result_count.append(x)
-
-        logger.info('获取用户%s搜索的可以使用的镜像！' % self.current_user.decode())
-        self.render('images.html', cursor = result, count = len(result_count))
+# class SearchImagesHandler(BaseHandler):
+#     '''
+#     搜索镜像
+#     '''
+#
+#     @tornado.web.authenticated
+#     def get(self):
+#         page = int(self.get_argument("page", 1))
+#         q = self.get_argument('q', '')
+#         if not q :
+#             self.redirect('/images_info')
+#             return
+#         sql = 'SELECT * FROM tb_images WHERE name LIKE upper(?) OR tags LIKE upper(?) OR info LIKE upper(?) OR author LIKE upper(?) OR types LIKE upper(?) ;'
+#         images_count = self.db_select(sql, ['%' + q + '%', '%' + q + '%', '%' + q + '%', '%' + q + '%', '%' + q + '%'])
+#
+#
+#         sql = 'SELECT * FROM tb_images WHERE name LIKE upper(?) OR tags LIKE upper(?) OR info LIKE upper(?) OR author LIKE upper(?) OR types LIKE upper(?) LIMIT ?,?;'
+#         images_result = self.db_select(sql, ['%' + q + '%', '%' + q + '%', '%' + q + '%', '%' + q + '%', '%' + q + '%',  (page - 1) * page_size, page_size])
+#
+#         sql = 'SELECT images_id FROM tb_status WHERE containers_user = ? AND containers_status = "runing";'
+#         statrt_result = self.db_select(sql, [self.current_user.decode()])
+#
+#         result = []
+#         for x in images_result:
+#             if {'images_id': x['images_id']} not in statrt_result:
+#                 x['json_images_port'] = json.loads(x['images_port'])
+#                 result.append(x)
+#
+#         result_count = []
+#
+#         for x in images_count:
+#             if {'images_id': x['images_id']} not in statrt_result:
+#                 result_count.append(x)
+#
+#         logger.info('获取用户%s搜索的可以使用的镜像！' % self.current_user.decode())
+#         self.render('images.html', cursor = result, count = len(result_count))
 
 # 展示已经开启的所有的靶场，复制自上面的SearchImagesHandler
 class ShowRangesHandler(BaseHandler):

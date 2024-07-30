@@ -1,9 +1,39 @@
 {% extends "layout.html" %}
 {% block css %}
-    <link rel="stylesheet" href="static/css/docker.css">
-    <link href="static/buss/css/plugin.css" rel="stylesheet" type="text/css"/>
-    <link href="static/plugin/sweetalert/sweetalert.css" rel="stylesheet" type="text/css"/>
-    <link href="static/css/dropify.min.css" rel="stylesheet" type="text/css"/>
+<style>
+    .wrapper-page-1 {
+        margin: 10% auto;
+        position: relative;
+        width: 420px;
+    }
+    .wrapper-page-1 .card-box {
+        box-shadow: 0 0px 24px 0 rgba(0, 0, 0, 0.06), 0 1px 0px 0 rgba(0, 0, 0, 0.02);
+    }
+    .wrapper-page-1 .logo {
+        font-size: 42px;
+        float: none;
+        color: #188ae2 !important;
+    }
+
+    .modal-footer-1 {
+        margin-top: 25px;
+        border-top: 1px solid rgba(135, 135, 135, 0.6) !important;
+    }
+
+    .modal-footer-1 a {
+        display: inline-block; /* 确保a标签为块级元素，以便应用margin */
+        margin-top: 20px; /* 根据需要调整间距的数值 */
+        margin-bottom: 20px; /* 如果需要也可以增加底部间距 */
+    }
+
+    .modal-footer-1 a + a {
+        margin-left: 50px; /* 根据需要调整间距的数值 */
+    }
+
+</style>
+
+
+{#    <link rel="stylesheet" href="static/css/docker.css">#}
 {% end %}
 
 {% block webinfo %}
@@ -33,15 +63,15 @@
     </div>
   </div>
 </div>
-<div class="wrapper-page">
-    <div class="ex-page-content text-center">
-        <h3 class="text-uppercase font-600">没有关闭所有的环境，无法退出系统！</h3>
+<div class="wrapper-page-1">
+    <div class="ex-page-content-1 text-center">
+        <h3 class="text-uppercase font-600">请关闭所有环境再退出！</h3>
         <!--<h3 class="text-uppercase font-600">是否关闭所有环境并退出系统？</h3>-->
-        <div class="modal-footer">
+        <div class="modal-footer-1">
             <a href="/stop_all_containers">
                 <button type="button" class="btn btn-info waves-effect waves-light" >关闭并退出</button>
             </a>&nbsp;&nbsp;
-            <a href="/">
+            <a href="/home">
                 <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">返回主页</button>
             </a>
         </div>
