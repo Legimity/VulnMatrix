@@ -9,10 +9,12 @@ File: Menu
   color: #ffffff !important;
   font-size: 32px;
   margin-top: 8px;
-  font-family: 'Rancho', cursive;
+  /*font-family: 'Rancho', cursive;*/
+  font-family: 'Raleway', sans-serif; !important;/* 使用 Raleway 字体 */
   /*font-family: 'Roboto', sans-serif; !* 更换字体为 Roboto *!*/
   float: left;
 }
+
 .logo span span {
   color: #10c469 !important;
 }

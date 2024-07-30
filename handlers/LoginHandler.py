@@ -63,4 +63,12 @@ class HomeHandler(BaseHandler):
     '''
     @tornado.web.authenticated
     def get(self):
-        self.render('search.html')
+        self.render('index.html')
+
+class WelcomeHandler(BaseHandler):
+    '''
+    主页，搜索。
+    '''
+    @tornado.web.authenticated
+    def get(self):
+        self.render('welcome.html')

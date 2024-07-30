@@ -1,16 +1,31 @@
 {% extends "layout.html" %}
 
 {% block css %}
-
+<style>
+    .wrapper-page-1 {
+        margin: 5% auto;
+        position: relative;
+        width: 420px;
+    }
+    .wrapper-page-1 .card-box {
+        box-shadow: 0 0px 24px 0 rgba(0, 0, 0, 0.06), 0 1px 0px 0 rgba(0, 0, 0, 0.02);
+    }
+    .wrapper-page-1 .logo {
+        font-size: 42px;
+        float: none;
+        color: #FFFFFF !important;
+        font-family: Apple Chancery, cursive;!important;
+    }
+</style>
 
 {% end %}
 
 {% block webinfo %}
 
-<div class="wrapper-page">
+<div class="wrapper-page-1">
     <br>
     <div class="text-center">
-        <span class="logo">修改登陆口令</span></a>
+        <span class="logo">修改密码</span></a>
     </div>
     <div class="m-t-40 card-box" style="background-color: rgba(0,0,0,0.3)">
         <div class="panel-body">
@@ -32,7 +47,7 @@
                 <div class="form-group text-center m-t-30">
                     <div class="col-xs-12">
                         <button class="btn btn-bordred btn-block waves-effect waves-light" type="submit"
-                                style="background-color: rgba(100,180,180,0.6);color:white">提交
+                                style="background-color: rgba(100,180,180,0.7);color:white">提交
                         </button>
                     </div>
                 </div>
