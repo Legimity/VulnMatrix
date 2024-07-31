@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>测试报告</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+</head>
+
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar is-primary" role="navigation" aria-label="main navigation" style="min-height: 4rem;">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="">
+                <img src="https://www.seu.edu.cn/_upload/tpl/0b/59/2905/template2905/images/mlogo.png" width="100"
+                    height="88">
+            </a>
+
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
+                data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item">
+                    主页
+                </a>
+
+                <div class="navbar-item has-dropdown">
+                    <a class="navbar-link">
+                        更多
+                    </a>
+
+                    <div class="navbar-dropdown">
+                        <a class="navbar-item">
+                            About
+                        </a>
+                        <a class="navbar-item">
+                            Contact
+                        </a>
+                        <hr class="navbar-divider">
+                        <a class="navbar-item">
+                            Report an issue
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主体 -->
+    <main style="padding: 0px 50px; margin-top: 60px; box-sizing: border-box;">
+        <div class="container">
+            <h1 class="title">渗透测试报告</h1>
+
+            <!-- Record -->
+            <div class="titleContent">
+                <div class="title2">127.0.0.1:8080</div>
+            </div>
+            <!-- 按照目录划分 -->
+            <article class="message">
+                <div class="message-header">
+                    <p>/vul/rce/rce_eval.php</p>
+                    <button class="delete" aria-label="delete"></button>
+                </div>
+                <div class="message-body">
+                    <table class="table is-striped is-narrow is-hoverable is-fullwidth">
+                        <thead></thead>
+                        <tbody>
+                            <tr>
+                                <th>漏洞类型</th>
+                                <td>
+                                    <pre>通用型漏洞/cmd-injection</pre>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>漏洞描述</th>
+                                <td>
+                                    <pre>CMD Injection 漏洞是一种安全漏洞，它允许攻击者在应用程序执行的命令中注入额外的命令或选项。当应用程序未能正确验证或清理用户输入，并且这些输入被用于构建
+系统命令时，就会发生这种漏洞。攻击者可以利用 CMD Injection 漏洞来执行恶意命令，获取敏感信息、控制系统、提升权限或进行其他恶意行为。</pre>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>漏洞等级</th>
+                                <td>
+                                    <span class="tag is-danger" style="margin: 25px; font-size: medium;">高危</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Payload</th>
+                                <td>
+                                    <pre>${@var_dump(md5(215021311))};</pre>
+                                </td> <!-- `<script>alert('Hello!')</script>` -->
+                            </tr>
+
+                            <tr>
+                                <th>响应</th>
+                                <td>
+                                    <pre>HTTP/1.1 200 OK
+Content-Type: text/html
+Date: Wed, 31 Jul 2024 03:53:19 GMT
+Server: Apache/2.4.39 (Win64) OpenSSL/1.1.1b mod_fcgid/2.3.9a mod_log_rotate/1.02
+X-Powered-By: PHP/5.5.9
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge,chrome=1&quot; /&gt;
+    &lt;meta charset=&quot;utf-8&quot; /&gt;
+    &lt;title&gt;Get the pikachu&lt;/title&gt;
+
+    &lt;meta name=&quot;description&quot; content=&quot;overview &amp;amp; stats&quot; /&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0&quot; /&gt;
+
+    &lt;!-- bootstrap &amp; fontawesome --&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;../../assets/css/bootstrap.min.css&quot; / &gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;../../assets/font-awesome/4.5.0/css/font-awesome.min.css&quot; /&gt;
+
+    &lt;!-- page specific plugin styles --&gt;
+
+    &lt;!-- text fonts --&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;../../assets/css/fonts.googleapis.com.css&quot; /&gt;
+
+    &lt;!-- ace styles --&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;../../assets/css/ace.min.css&quot; class=&quot;ace-main-stylesheet&quot; id=&quot;main-ace-style&quot; /&gt;
+
+    &lt;!--[if lte IE 9]&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;../../assets/css/ace-part2.min.css&quot; class=&quot;ace-main-stylesheet&quot; /&gt;
+    &lt;![endif]--&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;../../assets/css/ace-skins.min.css&quot; /&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;../../assets/css/ace-rtl.min.css&quot; /&gt;
+
+    &lt;!--[if lte IE 9]&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;../../assets/css/ace-ie.min.css&quot; /&gt;
+    &lt;![endif]--&gt;
+
+    &lt;!-- inline styles related to this page --&gt;
+
+    &lt;!-- ace settings handler --&gt;
+    &lt;script src=&quot;../../assets/js/ace-extra.min.js&quot;&gt;&lt;/script&gt;
+
+    &lt;!-- HTML5shiv and Respond.js for IE8 to support HTML5 elements and media queries --&gt;
+
+    &lt;!--[if lte IE 8]&gt;
+    &lt;script src=&quot;../../assets/js/html5shiv.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../../assets/js/respond.min.js&quot;&gt;&lt;/script&gt;
+    &lt;![endif]--&gt;
+    &lt;script src=&quot;../../assets/js/jquery-2.1.4.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../../assets/js/bootstrap.min.js&quot;&gt;&lt;/script&gt;
+
+&lt;/head&gt;
+
+&lt;body class=&quot;no-skin&quot;&gt;
+&lt;div id=&quot;navbar&quot; class=&quot;navbar navbar-default          ace-save-state&quot;&gt;
+    &lt;div class=&quot;navbar-container ace-save-state&quot; id=&quot;navbar-container&quot;&gt;
+
+        &lt;div class=&quot;navbar-header pull-left&quot;&gt;
+            &lt;a href=&quot;../../index.php&quot; class=&quot;navbar-brand&quot;&gt;
+                &lt;small&gt;
+                    &lt;i class=&quot;fa fa-key&quot;&gt;&lt;/i&gt;
+                    Pikachu 漏洞练习平台 pika~pika~
+                &lt;/small&gt;
+            &lt;/a&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;navbar-buttons navbar-header pull-right&quot; role=&quot;navigation&quot;&gt;
+            &lt;ul class=&quot;nav ace-nav&quot;&gt;
+
+                &lt;li class=&quot;light-blue dropdown-modal&quot;&gt;
+                    &lt;a data-toggle=&quot;dropdown&quot; href=&quot;#&quot; class=&quot;dropdown-toggle&quot;&gt;
+                        &lt;img class=&quot;nav-user-photo&quot; src=&quot;../../assets/images/avatars/pikachu1.png&quot; alt=&quot;Jason's Photo&quot; /&gt;
+                        &lt;span class=&quot;user-info&quot;&gt;
+                                    &lt;small&gt;欢迎&lt;/small&gt;
+                                    骚年
+                        &lt;/span&gt;
+                    &lt;/a&gt;
+
+                &lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;&lt;!-- /.navbar-container --&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;main-container ace-save-state&quot; id=&quot;main-container&quot;&gt;
+    &lt;script type=&quot;text/javascript&quot;&gt;
+        try{ace.settings.loadState('main-container')}catch(e){}
+    &lt;/script&gt;
+
+
+    &lt;div id=&quot;sidebar&quot; class=&quot;sidebar                  responsive                    ace-save-state&quot;&gt;
+        &lt;script type=&quot;text/javascript&quot;&gt;
+            try{ace.settings.loadState('sidebar')}catch(e){}
+        &lt;/script&gt;
+
+        &lt;ul class=&quot;nav nav-list&quot;&gt;
+            &lt;li class=&quot;&quot;&gt;
+                &lt;a href=&quot;../../index.php&quot;&gt;
+                    &lt;i class=&quot;ace-icon glyphicon glyphicon-tags&quot;&gt;&lt;/i&gt;
+                    &lt;span class=&quot;menu-text&quot;&gt; 系统介绍 &lt;/span&gt;
+                &lt;/a&gt;
+
+                &lt;b class=&quot;arrow&quot;&gt;&lt;/b&gt;
+            &lt;/li&gt;
+                                    </pre>
+                                </td> <!-- `<script>alert('Hello!')</script>` -->
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article class="message">
+                <div class="message-header">
+                    <p>/admin</p>
+                    <button class="delete" aria-label="delete"></button>
+                </div>
+                <div class="message-body">
+                    <table class="table is-striped is-narrow is-hoverable is-fullwidth">
+                        <thead></thead>
+                        <tbody>
+                            <tr>
+                                <th>Payload</th>
+                                <td>
+                                    <pre>&lt;script&gt;alert('Hello!')&lt;/script&gt;</pre>
+                                </td> <!-- `<script>alert('Hello!')</script>` -->
+                            </tr>
+                            <tr>
+                                <th>响应</th>
+                                <td>
+                                    <pre>.....</pre>
+                                </td> <!-- `<script>alert('Hello!')</script>` -->
+                            </tr>
+                            <tr>
+                                <th>漏洞类型</th>
+                                <td>
+                                    <pre>.....</pre>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <!-- Record -->
+            <div class="titleContent">
+                <div class="title2">[资产]127.0.0.1:8080</div>
+            </div>
+            <!-- 按照目录划分 -->
+            <article class="message">
+                <div class="message-header">
+                    <p>/admin</p>
+                    <button class="delete" aria-label="delete"></button>
+                </div>
+                <div class="message-body">
+                    <table class="table is-striped is-narrow is-hoverable is-fullwidth">
+                        <thead></thead>
+                        <tbody>
+                            <tr>
+                                <th>Payload</th>
+                                <td>
+                                    <pre>&lt;script&gt;alert('Hello!')&lt;/script&gt;</pre>
+                                </td> <!-- `<script>alert('Hello!')</script>` -->
+                            </tr>
+                            <tr>
+                                <th>响应</th>
+                                <td>
+                                    <pre>.....</pre>
+                                </td> <!-- `<script>alert('Hello!')</script>` -->
+                            </tr>
+                            <tr>
+                                <th>漏洞类型</th>
+                                <td>
+                                    <pre>.....</pre>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article class="message">
+                <div class="message-header">
+                    <p>/admin</p>
+                    <button class="delete" aria-label="delete"></button>
+                </div>
+                <div class="message-body">
+                    <table class="table is-striped is-narrow is-hoverable is-fullwidth">
+                        <thead></thead>
+                        <tbody>
+                            <tr>
+                                <th>Payload</th>
+                                <td>
+                                    <pre>&lt;script&gt;alert('Hello!')&lt;/script&gt;</pre>
+                                </td> <!-- `<script>alert('Hello!')</script>` -->
+                            </tr>
+                            <tr>
+                                <th>响应</th>
+                                <td>
+                                    <pre>.....</pre>
+                                </td> <!-- `<script>alert('Hello!')</script>` -->
+                            </tr>
+                            <tr>
+                                <th>漏洞类型</th>
+                                <td>
+                                    <pre>.....</pre>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+
+            <!--
+        {% for record in recordss %}
+        <div>
+            <h2 class="title is-2">[资产]</h2>
+            <strong>{{ comment.user }}</strong>: {{ comment.text }}
+        </div>
+        {% endfor %}
+        -->
+        </div>
+    </main>
+    <script>
+
+    </script>
+    <style>
+        .table th {
+            vertical-align: inherit;
+            width: 200px;
+            text-align: center;
+        }
+
+        .table tbody td pre {
+            background: transparent;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 10px;
+        }
+
+        h2 {
+            padding-top: 10px;
+        }
+
+        div.container {
+            margin: 0 auto;
+            padding: 20px;
+            border: solid;
+            border-radius: 10px;
+            border-color: rgb(184, 184, 184);
+        }
+
+        aside.menu {
+            background-color: #f5f5f5;
+            position: fixed;
+            top: 50px;
+            /* 距离顶部50像素 */
+            right: 20px;
+            /* 距离右侧20像素 */
+            z-index: 100;
+            /* 层级 */
+            /* 其他样式 */
+        }
+    </style>
+    <style lang="less">
+        .titleContent {
+            >div {
+                margin: 15px;
+            }
+        }
+
+        div.title2 {
+            display: inline-block;
+            position: relative;
+            height: 50px;
+            line-height: 50px;
+            padding-left: 15px;
+            padding-right: 10px;
+            margin-bottom: 25px;
+            background: #00d1b2;
+            left: -44px;
+            color: #FFF;
+            font-size: large;
+            font-weight: 600;
+
+            &:before {
+                content: "";
+                position: absolute;
+                height: 0;
+                width: 0;
+                border-bottom: 8px solid #00d1b2;
+                border-left: 8px solid transparent;
+                top: -8px;
+                left: 0;
+            }
+
+            &:after {
+                content: "";
+                position: absolute;
+                height: 0;
+                width: 0;
+                border-top: 24px solid transparent;
+                border-bottom: 24px solid transparent;
+                border-left: 8px solid #00d1b2;
+                right: -8px;
+            }
+        }
+    </style>
+</body>
+
+</html>

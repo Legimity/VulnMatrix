@@ -42,6 +42,26 @@ class BaseHandler(tornado.web.RequestHandler):
 
         return True
 
+    def check_and_create_table(self, table_name, create_sql):
+        '''
+        检查是否存在指定的数据表，如果不存在则创建
+        :param table_name: 数据表名称
+        :param create_sql: 创建数据表的SQL语句
+        :return: 无返回值
+        '''
+        try:
+            cursors = self.application.db.cursor()
+            # 修改查询语句，正确检查表是否存在
+            cursors.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name=? ", (table_name,))
+            if cursors.fetchone()['count(*)'] == 0:  # 使用索引访问结果
+                cursors.execute(create_sql)
+                self.application.db.commit()
+                logger.info(f"数据表 {table_name} 不存在，已创建。")
+            else:
+                logger.info(f"数据表 {table_name} 已存在。")
+        except Exception as e:
+            logger.error(f"检查或创建数据表 {table_name} 出错，错误原因为：{e}")
+
     def get_current_user(self):
         '''
         设置安全登陆的cookie

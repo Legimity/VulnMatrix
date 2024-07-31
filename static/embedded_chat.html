@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Example</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js/styles/default.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+  <div id="chat-container">
+    <div id="chat-messages">
+    </div>
+  </div>
+  <div class="message-input-wrapper">
+    <textarea type="text" id="message-input" placeholder="请输入您的内容" style="resize: none; padding:15px"></textarea>
+    <div id='gen-status'></div>
+    <div id="gen-button" class="tooltip">
+      <img src="../static/images/gen-report.png" alt="Button Image" style="width:26px; height:auto">
+      <span class="tooltiptext">一键生成报告</span>
+    </div>
+    <div id="send-button" class="tooltip">
+      <img src="../static/images/sendmsg.png" alt="Button Image" style="width:30px; height:auto">
+      <span class="tooltiptext">发送消息</span>
+    </div>
+  </div>
+  <div id="progress-bar"></div>
+
+  <script>
+    console.log(window)
+    var count = 0;
+    var temp = ""
+
+    // 获取需要的DOM元素
+    const chatMessages = document.getElementById("chat-messages");
+    const messageInput = document.getElementById("message-input");
+    const sendButton = document.getElementById("send-button");
+    const genButton = document.getElementById("gen-button");
+
+    // 设置 markdown 样式
+    var renderer = new marked.Renderer();
+    renderer.code = function (code, language) {
+      try {
+        var highlightedCode = hljs.highlightAuto(code).value;
+      } catch (error) {
+        //console.log(code)
+        return '<pre><code class="hljs ' + code.lang + '">' + code.text + '</code></pre>'
+      }
+      return '<pre><code class="hljs ' + language + '">' + highlightedCode + '</code></pre>';
+    };
+
+    marked.setOptions({
+      renderer: renderer,
+      gfm: true,
+      tables: true,
+      breaks: true,
+      pedantic: false,
+      sanitize: false,
+      smartLists: true,
+      smartypants: false,
+    })
+
+    // 定义发送消息的函数
+    function sendMessage() {
+      // 获取用户输入的消息
+      const message = messageInput.value;
+
+      if (message.trim() === "") {
+        return;
+      }
+      // 更新
+      count += 1;
+      temp = ""
+      // 创建一个新的用户消息元素，并添加到聊天框
+      let messageElement = `<div class="flex-right">
+                <div class="time-remark-wrapper mr10">
+                    <span class="time">${getNowTime()}</span>
+                    <div class="message user-message record">`
+        + marked.parse(message) +
+        `</div>
+                </div>
+                <img src="./images/user-head.png" class="avatar"/>
+            </div>`
+      chatMessages.innerHTML += messageElement;
+
+      // 创建一个新的chabot消息元素，并添加到聊天框
+      messageElement = ` <div class="flex-left">
+                <img src="./images/chatbot.png" class="avatar mr10"/>
+                <div class="time-remark-wrapper">
+                    <span class="time">${getNowTime()}</span>
+                    <div id="record${count}" class="message bot-message" style="display: inline-block;">
+                        ...
+                    </div>
+                </div>
+            </div>`
+      chatMessages.innerHTML += messageElement;
+
+      // 消息输入框清空
+      messageInput.value = "";
+
+      // 发送消息到服务器
+      sendToServer(message);
+    }
+
+    // 生成报告
+    async function genReport() {
+      const statusElement = document.getElementById('gen-status');
+      const progressBar = document.getElementById('progress-bar');
+      statusElement.innerText = '<正在生成报告，请稍后 ...>'
+      progressBar.innerHTML = `<progress class="progress is-small is-primary" max="100">15%</progress>`
+
+      try {
+        const response = await fetch('/generate_report', {
+          method: 'POST'
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            statusElement.innerHTML = '报告生成成功, <a href="' + result.download_url + '">点击这里下载</a>';
+            progressBar.innerHTML = ''
+          } else {
+            statusElement.innerText = '报告生成失败：' + result.error;
+            progressBar.innerHTML = ''
+          }
+        } else {
+          statusElement.innerText = '报告生成请求失败。';
+          progressBar.innerHTML = ''
+        }
+      } catch (error) {
+        statusElement.innerText = '请求出错：' + error.message;
+        progressBar.innerHTML = ''
+      }
+    }
+
+    // 获取当前时间
+    function getNowTime() {
+      var currentTime = new Date();
+      var year = currentTime.getFullYear();
+      var month = currentTime.getMonth() + 1; // 月份从 0 开始，所以要加 1
+      var day = currentTime.getDate();
+      var hours = currentTime.getHours();
+      var minutes = currentTime.getMinutes();
+      var seconds = currentTime.getSeconds();
+
+      // 格式化为两位数
+      if (month < 10) {
+        month = '0' + month;
+      }
+      if (day < 10) {
+        day = '0' + day;
+      }
+      if (hours < 10) {
+        hours = '0' + hours;
+      }
+      if (minutes < 10) {
+        minutes = '0' + minutes;
+      }
+      if (seconds < 10) {
+        seconds = '0' + seconds;
+      }
+
+      var formattedTime = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+      return formattedTime;
+    }
+
+    // 绑定发送按钮的点击事件
+    sendButton.addEventListener("click", sendMessage);
+    genButton.addEventListener("click", genReport);
+
+
+    // 绑定回车键发送消息
+    messageInput.addEventListener('keypress', function (event) {
+      if (event.key === 'Enter') {
+        sendMessage();
+        event.preventDefault(); // 阻止表单默认提交行为
+      }
+    });
+
+    // 绑定 Shift + Enter 为换行
+    messageInput.addEventListener('keydown', function (event) {
+      // 检查是否同时按下了 Shift 键和 Enter 键
+      if (event.key === 'Enter' && event.shiftKey) {
+        // 阻止默认的表单提交行为
+        event.preventDefault();
+
+        // 获取光标位置
+        var start = messageInput.selectionStart;
+        var end = messageInput.selectionEnd;
+
+        // 插入换行符
+        messageInput.value = messageInput.value.substring(0, start) + '\n' + messageInput.value.substring(end);
+
+        // 调整光标位置
+        messageInput.setSelectionRange(start + 1, start + 1);
+      }
+    });
+
+    // 文档加载完成时给出开场白
+    document.addEventListener('DOMContentLoaded', function () {
+      // 开场白
+      let welcome = `<div class="flex-left">
+                <img src="./images/chatbot.png" class="avatar mr10"/>
+                <div class="time-remark-wrapper">
+                    <span class="time">${getNowTime()}</span>
+                    <div id="record" class="message bot-message" style="display: inline-block;">
+                        你好，我是一个渗透测试辅助 AI ，我会将我们的对话内容更新到知识库以便您生成报告，请问有什么可以帮到你的吗？
+                    </div>
+                </div>
+            </div>`
+      document.getElementById("chat-messages").innerHTML += welcome;
+    });
+
+    // 每次传入一个 token 则添加到 div
+    function displayTokenizedMessage(tokens) {
+      var record = document.getElementById('record' + count.toString());
+      // temp 中每次将 tokens 合并
+      temp += tokens;
+      // 解析完毕后放入 div
+      var parsedHTML = marked.parse(temp);
+      // 清空 div 内容
+      record.textContent = ''
+      // 更新子元素
+      record.innerHTML = parsedHTML
+      //container.scrollTop = container.scrollHeight;
+    }
+
+    // 初始化 WebSocket 连接
+    const socket = new WebSocket(`ws://${window.location.host}/chat_ws`);
+
+    socket.onopen = function () {
+      console.log('WebSocket连接已打开');
+    };
+
+    socket.onmessage = function (event) {
+      displayTokenizedMessage(event.data);
+    };
+
+    socket.onclose = function (e) {
+      console.log('WebSocket连接已关闭: ', e.reason);
+    };
+
+    socket.onerror = function (err) {
+      console.error('WebSocket错误: ', err);
+    };
+
+    // 定义发送消息到服务器的函数
+    function sendToServer(message) {
+      socket.send(JSON.stringify({ message: message }));
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: transparent;
+      font-size: 14px;
+    }
+
+    body::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: transparent;
+    }
+
+    .time-remark-wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mr10 {
+      margin-right: 10px;
+    }
+
+    .time {
+      color: rgba(180, 187, 196);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .title {
+      display: flex;
+      justify-content: center;
+      text-align: center;
+      font-size: 16px;
+      padding: 15px;
+    }
+
+    #chat-messages {
+      padding: 0px;
+    }
+
+    #chat-container {
+      width: 98%;
+      margin: 0 auto;
+      /*
+            border-width: 1px;
+            border-style: solid;
+            border-color: #e5e7eb;
+            border-radius: 8px;
+            */
+      height: 80%;
+      box-sizing: content-box;
+      position: relative;
+      overflow: auto;
+      /* 滚动条隐藏 */
+      -ms-overflow-style: none;
+      /* IE 10+ */
+      scrollbar-width: none;
+      /* Firefox */
+    }
+
+    /* 滚动条隐藏 (Chrome) */
+    #chat-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .message-input-wrapper {
+      position: fixed;
+      top: 81%;
+      display: flex;
+      align-items: center;
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 98%;
+      height: 17%;
+      background-color: #fff;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      border-radius: 8px;
+      /* background-color: #fff; */
+    }
+
+    .flex-right .time-remark-wrapper {
+      align-items: flex-end;
+    }
+
+    .message {
+      padding: 8px;
+      border-radius: 8px;
+    }
+
+    /* 消息文本样式（markdown 解析的 p） */
+    .message p {
+      margin-top: 5px;
+      margin-bottom: 5px;
+    }
+
+    .message ol {
+      margin-left: 20px;
+    }
+
+    textarea:focus {
+      outline: none;
+    }
+
+    #message-input {
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      width: 100%;
+    }
+
+    #message-input>textarea {
+      flex: 1;
+    }
+
+    .user-message {
+      background-color: rgb(210, 249, 209);
+      /*text-align: right;*/
+      margin-bottom: 20px;
+      padding: 10px 15px;
+      display: inline-block;
+      margin-left: 42px;
+    }
+
+    .avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+    }
+
+    .flex-right {
+      display: flex;
+      justify-content: end;
+    }
+
+    .flex-left {
+      display: flex;
+      justify-content: start;
+    }
+
+    #send-button {
+      color: #000000;
+      padding-left: 10px;
+      padding-right: 15px;
+      padding-bottom: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #gen-button {
+      color: #000000;
+      padding-left: 8px;
+      padding-right: 8px;
+      padding-bottom: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .bot-message {
+      background-color: rgb(244, 246, 248);
+      margin-bottom: 20px;
+      display: inline-block;
+      padding: 10px 15px;
+      margin-right: 42px;
+    }
+
+    .hljs {
+      background: #fff;
+      border-radius: 8px;
+    }
+
+    /* 进度条容器 */
+    #progress-bar {
+      display: flex;
+      width: 98%;
+      position: fixed;
+      top: 96%;
+    }
+
+    /* 报告生成的状态提示 */
+    div#gen-status {
+      padding-bottom: 13px;
+      padding-right: 20px;
+      width: 85%;
+      font-size: 1px;
+      color: gray;
+    }
+
+    /* tooltip */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 120px;
+      background-color: black;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px 0;
+      position: absolute;
+      z-index: 1;
+      top: -5px;
+      right: 110%;
+
+      /* 淡入 - 1秒内从 0% 到 100% 显示: */
+      opacity: 0;
+      transition: opacity 3s;
+      transition-delay: 2s;
+      /* 悬停2s后开始淡入 */
+    }
+
+    .tooltip .tooltiptext::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 100%;
+      margin-top: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: transparent transparent transparent black;
+    }
+
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+</body>
+
+</html>
