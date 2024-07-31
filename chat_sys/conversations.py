@@ -28,7 +28,7 @@ import uuid
 from datetime import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append('../')
+
 try:
     from .config import (
         KnowledgeBase_conv,
@@ -127,7 +127,6 @@ class KnowbaseConversation:
     task_queue = Queue()   # 任务队列
 
     def __init__(self) -> None:
-        os.environ["NVIDIA_API_KEY"] ="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"
 
         # 语料来源
         self.urls =[
@@ -176,7 +175,7 @@ class KnowbaseConversation:
         self.report_chain = RExtract(Report, instruct_llm, gen_report_prompt)
 
         # 加载语料库
-        self.vector_store = FAISS.load_local("/home/jhxu/VulnMatrix/chat_sys/faiss_index/",embedding_model,allow_dangerous_deserialization=True)
+        self.vector_store = FAISS.load_local(os.path.dirname(os.path.abspath(__file__)) + "/faiss_index/",embedding_model,allow_dangerous_deserialization=True)
         # self.vector_store = self.embeddings(embedding_model)   # 嵌入
         # print(type(self.vector_store))
 
@@ -271,7 +270,7 @@ class KnowbaseConversation:
             else:
                 vector_store.add_documents(documents=chunk, embedding= embedding_model)
         # self.KNOWLEDGDB = f"chat_sys/faiss_index/{str(uuid.uuid1())}.index"
-        vector_store.save_local("/home/jhxu/VulnMatrix/chat_sys/faiss_index/")
+        vector_store.save_local(os.path.dirname(os.path.abspath(__file__)) + "/faiss_index/")
         return vector_store
 
 
