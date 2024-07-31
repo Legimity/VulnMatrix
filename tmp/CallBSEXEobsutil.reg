@@ -1,0 +1,16 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\CallBSEXEobsutil]
+@="URL: CallBSEXEobsutil Protocol Handler"
+"URL Protocol"=""
+
+;E:\localExe\gy_print.exe 为本地EXE路径
+[HKEY_CLASSES_ROOT\CallBSEXEobsutil\DefaultIcon]
+@="C:\\tool\\obsutil\\obsutil.exe"
+
+[HKEY_CLASSES_ROOT\CallBSEXEobsutil\Shell]
+
+[HKEY_CLASSES_ROOT\CallBSEXEobsutil\Shell\Open]
+
+[HKEY_CLASSES_ROOT\CallBSEXEobsutil\Shell\Open\Command]
+@="\"C:\\tool\\obsutil\\obsutil.exe\" %1"

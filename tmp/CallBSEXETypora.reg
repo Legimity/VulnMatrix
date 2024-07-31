@@ -1,0 +1,16 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\CallBSEXETypora]
+@="URL: CallBSEXETypora Protocol Handler"
+"URL Protocol"=""
+
+;E:\localExe\gy_print.exe 为本地EXE路径
+[HKEY_CLASSES_ROOT\CallBSEXETypora\DefaultIcon]
+@="C:\\tool\\Typora\\Typora\\Typora.exe"
+
+[HKEY_CLASSES_ROOT\CallBSEXETypora\Shell]
+
+[HKEY_CLASSES_ROOT\CallBSEXETypora\Shell\Open]
+
+[HKEY_CLASSES_ROOT\CallBSEXETypora\Shell\Open\Command]
+@="\"C:\\tool\\Typora\\Typora\\Typora.exe\" %1"

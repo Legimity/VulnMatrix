@@ -1,0 +1,14 @@
+cd
+pwd
+vim
+vi
+whoami
+ls
+--help
+--version
+which
+whereis
+man
+history
+exit
+echo

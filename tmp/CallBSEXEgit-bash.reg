@@ -1,0 +1,16 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\CallBSEXEgit-bash]
+@="URL: CallBSEXEgit-bash Protocol Handler"
+"URL Protocol"=""
+
+;E:\localExe\gy_print.exe 为本地EXE路径
+[HKEY_CLASSES_ROOT\CallBSEXEgit-bash\DefaultIcon]
+@="C:\\tool\\git\\git-bash.exe"
+
+[HKEY_CLASSES_ROOT\CallBSEXEgit-bash\Shell]
+
+[HKEY_CLASSES_ROOT\CallBSEXEgit-bash\Shell\Open]
+
+[HKEY_CLASSES_ROOT\CallBSEXEgit-bash\Shell\Open\Command]
+@="\"C:\\tool\\git\\git-bash.exe\" %1"

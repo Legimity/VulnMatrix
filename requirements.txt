@@ -7,3 +7,10 @@ websockets
 ptyprocess
 paramiko
 pywinpty
+dotenv
+langchain
+langchain-nvidia-ai-endpoints
+langchain_community
+faiss-cpu
+rich
+Jinja2

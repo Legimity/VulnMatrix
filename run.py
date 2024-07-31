@@ -2,15 +2,17 @@ import os
 import sqlite3
 import hashlib
 import threading
+import string
 import json
 import re
 import random
-
-
+import asyncio
+import re
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
+
 
 # from docker_lib import Dockers_Start, Dockers_Stop, Dockers_Info
 from docker_lib import Dockers_Start, Dockers_Stop, Dockers_Info,Docker_ComposeControl
@@ -18,11 +20,10 @@ from utils import Start_Get_Sysinfo
 from log.logger import logger
 from tornado.options import define, options
 import dotenv
+
 dotenv.load_dotenv()
-
 PROJECT_PATH=os.getenv("PROJECT_PATH")
-print(PROJECT_PATH)
-
+logger.info(PROJECT_PATH)
 
 
 # 尝试重构代码,从handlers中导入所有的handler，而不是全部写在同一个文件中
@@ -33,7 +34,8 @@ from handlers.PassHandler import Change_Pass_Handler
 from handlers.ViewNetworkHandler import ViewNetworkHandler
 from handlers.ToolManagerHandler import ToolManagerHandler
 from handlers.TreminalWebSocketHandler import TreminalWebSocketHandler
-
+from handlers.ReportHandler import ReportHandler, DownloadHandler
+from handlers.ChatWebSocketHandler import ChatWebSocketHandler
 
 try:
     from Queue import Queue
@@ -43,6 +45,7 @@ import os
 
 
 que = Queue()
+
 page_size = 30
 Mem_Limit = '30M'
 Sys_Pass = 'admin123'
@@ -51,7 +54,6 @@ Sys_Pass = 'admin123'
 define("port", default = 8000, help = "run on the given port", type = int)
 define("host", default = '0.0.0.0',help = "run on the given host", type = str)
 define("sqlite_path", default = "./DB/test.db", help = "database path")
-
 
 class Application(tornado.web.Application):
     '''
@@ -78,7 +80,6 @@ class Application(tornado.web.Application):
             (r"/websocket", SocketHandler),
             (r"/setting", SettingHandler),
 
-
             (r"/add_images", AddImagesHandler),
             (r"/start_containers", StartContainersHandler),
             (r"/stop_containers", StopContainersHandler),
@@ -90,27 +91,26 @@ class Application(tornado.web.Application):
             # (r"/upload", UploadHandler),
             # 测试根据docker-compose启动靶场
             # (r"/start_envs", DockerComposeControlHandler),
-            
+
             # 新建靶场环境,复制自AddImagesHandler
             (r"/add_envs", AddEnvsHandler),
             (r"/stop_envs", StopEnvsHandler),#TODO
-            
-           
+
             (r"/tool_manage", ToolManagerHandler),
             (r"/ws", TreminalWebSocketHandler),
+            (r"/chat_ws", ChatWebSocketHandler),
+
+            # 报告生成与下载
+            (r"/generate_report", ReportHandler),
+            (r"/download_report", DownloadHandler),
 
             # 来自StartContainersHandler
             (r"/start_envs", StartEnvsHandler),
 
             # 增加展示所有已经启动的靶场,
             (r"/envs_info", EnvsHandler),
-            
-            
-            
 
             (r".*", ErrorHandler),
-
-            
         ]
         # 初始化tornado的设置
         settings = dict(
