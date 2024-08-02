@@ -1,6 +1,6 @@
 import os
 
-# Define routers, switches, and hosts configurations
+# Define routers, switches, and hosts configurations --> our template
 routers = [
     {"name": "dmz_router", "nets": ["dmz"], "ip": "10.1.20.254"},
     {"name": "office_router", "nets": ["office"], "ip": "10.2.10.254"},
@@ -37,11 +37,11 @@ networks = {
     "dev": "10.20.2.0/24",
 }
 
-# Function to convert IP to a valid directory name
+# convert IP to directory name
 def ip_to_dirname(ip):
     return ip.replace('.', '_')
 
-# Create necessary directories
+# Create directories
 def create_directories():
     if not os.path.exists('services'):
         os.mkdir('services')
@@ -60,6 +60,9 @@ def create_directories():
                 os.makedirs(f'services/{dirname}')
 
 # Create Dockerfile
+# TODO: 要能够自动化安装他们提供的服务 -->
+# TODO: add vulnerability to the Dockerfile
+#       目前想法：构建一个base iamge
 def create_dockerfile(service_type, network, ip):
     dirname = f'{service_type}_{network}_{ip_to_dirname(ip)}'
     dockerfile_content = """\
@@ -73,6 +76,7 @@ ENTRYPOINT ["/usr/local/bin/startup.sh"]
         f.write(dockerfile_content)
 
 # Create startup script
+# TODO:
 def create_startup_script(service_type, network, ip, commands=None):
     dirname = f'{service_type}_{network}_{ip_to_dirname(ip)}'
     iptables_rules = "\n".join(commands) if commands else ""
@@ -87,6 +91,7 @@ tail -f /dev/null
         f.write(startup_script_content)
 
 # Create docker-compose.yml file
+# TODO: auto create docker-compose.yml --> 根据配置文件
 def create_docker_compose():
     services = ""
     networks_str = ""
