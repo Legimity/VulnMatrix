@@ -1,0 +1,165 @@
+version: '3.8'
+services:
+
+  switch_dmz_10_1_20_3:
+    build: ./services/switch_dmz_10_1_20_3
+    container_name: switch_dmz_10_1_20_3
+    networks:
+      dmz:
+        ipv4_address: 10.1.20.3
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  switch_office_10_2_10_3:
+    build: ./services/switch_office_10_2_10_3
+    container_name: switch_office_10_2_10_3
+    networks:
+      office:
+        ipv4_address: 10.2.10.3
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  switch_dev_10_20_2_3:
+    build: ./services/switch_dev_10_20_2_3
+    container_name: switch_dev_10_20_2_3
+    networks:
+      dev:
+        ipv4_address: 10.20.2.3
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  host_dmz_10_1_20_10:
+    build: ./services/host_dmz_10_1_20_10
+    container_name: host_dmz_10_1_20_10
+    networks:
+      dmz:
+        ipv4_address: 10.1.20.10
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  host_dmz_10_1_20_11:
+    build: ./services/host_dmz_10_1_20_11
+    container_name: host_dmz_10_1_20_11
+    networks:
+      dmz:
+        ipv4_address: 10.1.20.11
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  host_dmz_10_1_20_12:
+    build: ./services/host_dmz_10_1_20_12
+    container_name: host_dmz_10_1_20_12
+    networks:
+      dmz:
+        ipv4_address: 10.1.20.12
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  host_office_10_2_10_10:
+    build: ./services/host_office_10_2_10_10
+    container_name: host_office_10_2_10_10
+    networks:
+      office:
+        ipv4_address: 10.2.10.10
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  host_office_10_2_10_11:
+    build: ./services/host_office_10_2_10_11
+    container_name: host_office_10_2_10_11
+    networks:
+      office:
+        ipv4_address: 10.2.10.11
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  host_dev_10_20_2_10:
+    build: ./services/host_dev_10_20_2_10
+    container_name: host_dev_10_20_2_10
+    networks:
+      dev:
+        ipv4_address: 10.20.2.10
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  host_dev_10_20_2_11:
+    build: ./services/host_dev_10_20_2_11
+    container_name: host_dev_10_20_2_11
+    networks:
+      dev:
+        ipv4_address: 10.20.2.11
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  host_dev_10_20_2_12:
+    build: ./services/host_dev_10_20_2_12
+    container_name: host_dev_10_20_2_12
+    networks:
+      dev:
+        ipv4_address: 10.20.2.12
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  router_dmz_10_1_20_254:
+    build: ./services/router_dmz_10_1_20_254
+    container_name: router_dmz_10_1_20_254
+    networks:
+      dmz:
+
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  router_office_10_2_10_254:
+    build: ./services/router_office_10_2_10_254
+    container_name: router_office_10_2_10_254
+    networks:
+      office:
+
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  router_dev_10_20_2_254:
+    build: ./services/router_dev_10_20_2_254
+    container_name: router_dev_10_20_2_254
+    networks:
+      dev:
+
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+networks:
+  public:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 203.0.113.0/24
+  dmz:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.1.20.0/24
+  office:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.2.10.0/24
+  dev:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.20.2.0/24
+
