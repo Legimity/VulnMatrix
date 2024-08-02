@@ -1,3 +1,4 @@
+```bash
 # Compose up
 (VulnMatrix) Yuntsy:docker (main*) $ docker-compose up -d
 WARN[0000] /Users/yuntsy/My/Projects/Blog/VulnMatrix/docker/docker-compose.yml: `version` is obsolete
@@ -156,3 +157,5 @@ PING 10.1.20.11 (10.1.20.11): 56 data bytes
 ^C
 --- 10.1.20.11 ping statistics ---
 4 packets transmitted, 4 packets received, 0% packet loss
+
+```
