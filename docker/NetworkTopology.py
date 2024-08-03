@@ -169,7 +169,7 @@ class NetworkTopology:
         return self._switches
 
     @property
-    def getHosts(self):
+    def getHosts(self) -> List[Host]:
         for subnet, hosts in self._hostsRaw.items():
             network = subnet
             for host_data in hosts:
@@ -188,7 +188,7 @@ class NetworkTopology:
         return self._hosts
 
     @property
-    def getNetworks(self):
+    def getNetworks(self) -> List[Network]:
         nameNetList = []
         for network_data in self._networksRaw:
             name = network_data.get('name', '')
