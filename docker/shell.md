@@ -144,10 +144,13 @@ WARN[0000] /Users/yuntsy/My/Projects/Blog/VulnMatrix/docker/docker-compose.yml: 
 
 # 进入容器，ping其他主机，验证网络连通性
 (VulnMatrix) Yuntsy:docker (main*) $ docker exec -it host_dmz_10_1_20_10 /bin/sh
+# 显示当前目录
 / # pwd
 /
+# 查看当前目录下的文件
 / # ls
 bin    dev    etc    home   lib    media  mnt    opt    proc   root   run    sbin   srv    sys    tmp    usr    var
+# ping 同一个内网中的另一台主机  --> 应该成功，结果：成功
 / # ping 10.1.20.11
 PING 10.1.20.11 (10.1.20.11): 56 data bytes
 64 bytes from 10.1.20.11: seq=0 ttl=64 time=0.312 ms
@@ -157,5 +160,11 @@ PING 10.1.20.11 (10.1.20.11): 56 data bytes
 ^C
 --- 10.1.20.11 ping statistics ---
 4 packets transmitted, 4 packets received, 0% packet loss
+# ping 不同内网中的主机  --> 应该失败，结果：失败
+/ # ping 10.2.10.10
+PING 10.2.10.10 (10.2.10.10): 56 data bytes
+^C
+--- 10.2.10.10 ping statistics ---
+7 packets transmitted, 0 packets received, 100% packet loss
 
 ```
