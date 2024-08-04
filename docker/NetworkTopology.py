@@ -71,20 +71,22 @@ class Network:
     Network类，用于存储网络的名称，网络的网段
     """
 
-    def __init__(self, nameNet: List[Dict[str, str]]):
+    def __init__(self, name, network):
         """
         @nameNet: 网络名: 网络地址
         """
-        self._nameNet = nameNet
-
-    def getNetwork(self, name) -> str:
-        for net in self._nameNet:
-            if net.get('name') == name:
-                return net.get('network')
+        # self._nameNet = nameNet
+        self._name = name
+        self._network = network
 
     @property
-    def getNameNet(self):
-        return self._nameNet
+    def getName(self):
+        return self._name
+
+    @property
+    def getNetwork(self):
+        return self._network
+
 
 
 class Host:
@@ -142,7 +144,7 @@ class NetworkTopology:
             name = router_data.get('name', '')
             netGateList = []
             for net in router_data.get('network', []):
-                network = self.getNetworkFromName(net)
+                network = self.getNetworkFromName(net.get('name'))
                 netGate = {'netName': net.get('name'), 'network': network, 'gateway': net.get('gateway')}
                 netGateList.append(netGate)
             router = Router(name, netGateList)
@@ -189,14 +191,11 @@ class NetworkTopology:
 
     @property
     def getNetworks(self) -> List[Network]:
-        nameNetList = []
         for network_data in self._networksRaw:
             name = network_data.get('name', '')
             network = network_data.get('network', '')
-            nameNet = {'name': name, 'network': network}
-            nameNetList.append(nameNet)
-        network = Network(nameNetList)
-        self._networks.append(network)
+            netWork = Network(name, network)
+            self._networks.append(netWork)
         return self._networks
 
     def getNetworkFromName(self, name: str) -> str:
@@ -204,20 +203,36 @@ class NetworkTopology:
             if net.get('name') == name:
                 return net.get('network')
 
+    # TODO: 实现networks, routers, switches, hosts的增删改查
+    # def addNetworks(self):
+    #     return self._networks
+    #
+    # def addRouters(self):
+    #     return self._routers
+    #
+    # def addSwitches(self):
+    #     return self._switches
+    #
+    # def addHosts(self):
+    #     return self._hosts
+
 
 # networkTopology = NetworkTopology()
 # networkTopology.loadConfig('network_config.json')
 #
 # routers: List[Router] = networkTopology.getRouters
-# # for router1 in routers:
-# #     print(router1.getName)
-# #     print(router1.getNetGate)
+# for router1 in routers:
+#     # print(router1.getName)
+#     print(router1.getNetGate)
+#
 # switches: List[Switch] = networkTopology.getSwitches
-# # for switch1 in switches:
-# #     print(switch1.getName + '接入网络: ' + switch1.getNetwork + ', IP地址: ' + switch1.getIp)
+# for switch1 in switches:
+#     print(switch1.getName + '接入网络: ' + switch1.getNetwork + ', IP地址: ' + switch1.getIp)
+#
 # networks: List[Network] = networkTopology.getNetworks
-# # for network1 in networks:
-# #     print(network1.getNameNet)
+# for network1 in networks:
+#     print(network1.getName)
+#
 # hosts: List[Host] = networkTopology.getHosts
-# # for host in hosts:
-# #     print(host.getName + '接入网络: ' + host.getNetwork + ', IP地址: ' + host.getIp)
+# for host in hosts:
+#     print(host.getName + '接入网络: ' + host.getNetwork + ', IP地址: ' + host.getIp)
