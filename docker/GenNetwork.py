@@ -2,7 +2,7 @@ import os
 from typing import List
 
 from docker.Contents import Contents
-from docker.NetworkTopology import NetworkTopology, Router, Network, Switch, Host
+from docker.NetworkTopology import NetworkTopology, Router, Network, Host
 
 
 def ipToDir(ip: str):
@@ -13,7 +13,7 @@ class GenNetwork:
     def __init__(self, networkTopology: NetworkTopology):
         self.networks: List[Network] = networkTopology.getNetworks
         self.routers: List[Router] = networkTopology.getRouters
-        self.switches: List[Switch] = networkTopology.getSwitches
+        # self.switches: List[Switch] = networkTopology.getSwitches
         self.hosts: List[Host] = networkTopology.getHosts
         self.composeContents: str = ""
 
@@ -24,7 +24,7 @@ class GenNetwork:
         if not os.path.exists('network'):
             os.mkdir('network')
         for router in self.routers:
-            routerDirName = f'router_{router.getName}'
+            routerDirName = f'rnode_{router.getName}'
             routerPath = f'network/{routerDirName}'
             if not os.path.exists(routerPath):
                 os.makedirs(routerPath)
@@ -33,27 +33,45 @@ class GenNetwork:
             with open(f'{routerPath}/Dockerfile', 'w') as f:
                 f.write(Contents.BaseDockerfile)
             with open(f'{routerPath}/startup.sh', 'w') as f:
-                f.write(Contents.StartupScript)
-
-        for switch in self.switches:
-            switchDirName = f'switch_{switch.getNetwork}_{ipToDir(switch.getIp)}'
-            if not os.path.exists(f'network/{switchDirName}'):
-                os.makedirs(f'network/{switchDirName}')
-            with open(f'network/{switchDirName}/Dockerfile', 'w') as f:
-                f.write(Contents.BaseDockerfile)
-            with open(f'network/{switchDirName}/startup.sh', 'w') as f:
-                f.write(Contents.StartupScript)
+                f.write(Contents.BaseStartupScript)
+        #
+        # for switch in self.switches:
+        #     switchDirName = f'switch_{switch.getNetwork}_{ipToDir(switch.getIp)}'
+        #     if not os.path.exists(f'network/{switchDirName}'):
+        #         os.makedirs(f'network/{switchDirName}')
+        #     with open(f'network/{switchDirName}/Dockerfile', 'w') as f:
+        #         f.write(Contents.BaseDockerfile)
+        #     with open(f'network/{switchDirName}/startup.sh', 'w') as f:
+        #         f.write(Contents.StartupScript)
 
         for host in self.hosts:
-            hostDirName = f'host_{host.getNetwork}_{ipToDir(host.getIp)}'
+            # hostDirName = f'hnode_{host.getName}_{host.getNetwork}_{ipToDir(host.getIp)}'
+            hostDirName = f'hnode_{host.getNetwork}_{ipToDir(host.getIp)}'
             if not os.path.exists(f'network/{hostDirName}'):
                 os.makedirs(f'network/{hostDirName}')
-            with open(f'network/{hostDirName}/Dockerfile', 'w') as f:
-                f.write(Contents.BaseDockerfile)
-            with open(f'network/{hostDirName}/startup.sh', 'w') as f:
-                f.write(Contents.StartupScript)
+            # dirName = f'network/{hostDirName}'
+            if host.getType == '0':
+                host.createDockerfile(Contents.BaseDockerfile)
+                host.createStartupScript(Contents.BaseStartupScript)
+            elif host.getType == '1':
+                host.createDockerfile(Contents.VulDockerfile1)
+                host.createStartupScript(Contents.StartupScript1)
+            elif host.getType == '2':
+                host.createDockerfile(Contents.VulDockerfile2)
+                host.createStartupScript(Contents.StartupScript2)
+            elif host.getType == '3':
+                host.createDockerfile(Contents.VulDockerfile3)
+                host.createStartupScript(Contents.StartupScript3)
+            elif host.getType == '4':
+                host.createDockerfile(Contents.VulDockerfile4)
+                host.createStartupScript(Contents.StartupScript4)
+            elif host.getType == '5':
+                host.createDockerfile(Contents.VulDockerfile5)
+                host.createStartupScript(Contents.StartupScript5)
+
 
     # TODO: ?
+    # RUN apk install
     # def createDockerfile(self, path, addCommand: bool, commandLine: str):
     #     """
     #     创建Dockerfile文件
@@ -82,7 +100,7 @@ class GenNetwork:
         """
         networksContents: str = ""
         routersContents: str = ""
-        switchesContents: str = ""
+        # switchesContents: str = ""
         hostsContents: str = ""
         for network in self.networks:
             networkName = network.getName
@@ -92,25 +110,26 @@ class GenNetwork:
 
         contents = ""
         for router in self.routers:
-            routerDirname = f'router_{router.getName}'
+            routerDirname = f'rnode_{router.getName}'
             for netGate in router.getNetGate:
                 contents += f"{netGate.get('netName')}:\n            ipv4_address: {netGate.get('gateway')}\n\n        "
             routersContents += Contents.composeRouters.format(routerDirname=routerDirname, routerContents=contents)
             # print(routersContents)
 
-        for switch in self.switches:
-            switchDirname = f'switch_{switch.getNetwork}_{ipToDir(switch.getIp)}'
-            switchesContents += Contents.composeSwitches.format(switchDirname=switchDirname, network=switch.getNetwork,
-                                                              ip=switch.getIp)
-            # print(switchesContents)
+        # for switch in self.switches:
+        #     switchDirname = f'switch_{switch.getNetwork}_{ipToDir(switch.getIp)}'
+        #     switchesContents += Contents.composeSwitches.format(switchDirname=switchDirname, network=switch.getNetwork,
+        #                                                       ip=switch.getIp)
+        #     # print(switchesContents)
 
         for host in self.hosts:
-            hostDirname = f'host_{host.getNetwork}_{ipToDir(host.getIp)}'
+            hostDirname = f'hnode_{host.getNetwork}_{ipToDir(host.getIp)}'
             hostsContents += Contents.composeHosts.format(hostDirname=hostDirname, network=host.getNetwork,
                                                               ip=host.getIp)
             # print(hostsContents)
 
-        self.composeContents += Contents.composeServicesFlag + routersContents + switchesContents + hostsContents + Contents.composeNetworksFlag + networksContents
+        # self.composeContents += Contents.composeServicesFlag + routersContents + switchesContents + hostsContents + Contents.composeNetworksFlag + networksContents
+        self.composeContents += Contents.composeServicesFlag + routersContents + hostsContents + Contents.composeNetworksFlag + networksContents
         # print(self.composeContents)
         with open('docker-compose.yml', 'w') as f:
             f.write(self.composeContents)

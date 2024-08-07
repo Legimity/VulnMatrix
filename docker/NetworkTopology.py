@@ -1,6 +1,12 @@
 import json
 from typing import List, Dict
 
+from docker.Contents import Contents
+
+
+def ipToDir(ip: str):
+    return ip.replace('.', '_')
+
 
 class Router:
     """
@@ -37,33 +43,33 @@ class Router:
                 return net.get('network')
 
 
-class Switch:
-    """
-    Switch类，子交换机
-    用于存储子交换机的名称，交换机接入的网络，交换机在这个网络中的ip地址
-    """
-
-    def __init__(self, name: str, net: str, ip: str):
-        """
-        @name: 交换机名
-        @net: 接入的网络
-        @ip: 在这个网络中的ip
-        """
-        self._name = name
-        self._net = net
-        self._ip = ip
-
-    @property
-    def getName(self) -> str:
-        return self._name
-
-    @property
-    def getNetwork(self) -> str:
-        return self._net
-
-    @property
-    def getIp(self) -> str:
-        return self._ip
+# class Switch:
+#     """
+#     Switch类，子交换机
+#     用于存储子交换机的名称，交换机接入的网络，交换机在这个网络中的ip地址
+#     """
+#
+#     def __init__(self, name: str, net: str, ip: str):
+#         """
+#         @name: 交换机名
+#         @net: 接入的网络
+#         @ip: 在这个网络中的ip
+#         """
+#         self._name = name
+#         self._net = net
+#         self._ip = ip
+#
+#     @property
+#     def getName(self) -> str:
+#         return self._name
+#
+#     @property
+#     def getNetwork(self) -> str:
+#         return self._net
+#
+#     @property
+#     def getIp(self) -> str:
+#         return self._ip
 
 
 class Network:
@@ -88,13 +94,12 @@ class Network:
         return self._network
 
 
-
 class Host:
     """
     Host类，用于存储主机的名称，主机接入的网络，主机在这个网络中的ip地址
     """
 
-    def __init__(self, name: str, net: str, ip: str):
+    def __init__(self, name: str, net: str, ip: str, type: str = ''):
         """
         @name: 主机名
         @net: 接入的网络
@@ -103,6 +108,7 @@ class Host:
         self._name = name
         self._net = net
         self._ip = ip
+        self._type = type
 
     @property
     def getName(self) -> str:
@@ -116,12 +122,28 @@ class Host:
     def getIp(self) -> str:
         return self._ip
 
+    @property
+    def getType(self) -> str:
+        return self._type
+
+    def createDockerfile(self, contents: str):
+        hostDirName = f'hnode_{self.getNetwork}_{ipToDir(self.getIp)}'
+        dirName = f'network/{hostDirName}'
+        with open(f'{dirName}/Dockerfile', 'w') as f:
+            f.write(contents)
+
+    def createStartupScript(self, contents: str):
+        hostDirName = f'hnode_{self.getNetwork}_{ipToDir(self.getIp)}'
+        dirName = f'network/{hostDirName}'
+        with open(f'{dirName}/startup.sh', 'w') as f:
+            f.write(contents)
+
 
 class NetworkTopology:
 
     def __init__(self):
         self._routers: List[Router] = []
-        self._switches: List[Switch] = []
+        # self._switches: List[Switch] = []
         self._networks: List[Network] = []
         self._hosts: List[Host] = []
 
@@ -134,7 +156,7 @@ class NetworkTopology:
         with open(file_path, 'r') as file:
             data = json.load(file)
             self._routersRaw = data.get('routers', [])
-            self._switchesRaw = data.get('switches', [])
+            # self._switchesRaw = data.get('switches', [])
             self._hostsRaw = data.get('hosts', {})
             self._networksRaw = data.get('networks', {})
 
@@ -151,24 +173,24 @@ class NetworkTopology:
             self._routers.append(router)
         return self._routers
 
-    @property
-    def getSwitches(self) -> List[Switch]:
-        for switch_data in self._switchesRaw:
-            name = switch_data.get('name', '')
-            network = switch_data.get('network', '')
-            ip = switch_data.get('ip', '')
-            switch = Switch(name, network, ip)
-            self._switches.append(switch)
-
-            # try:
-            #     network = self.getNetworkFromName(network)
-            #     ip = switch_data.get('ip', '')
-            #     switch = Switch(name, network, ip)
-            #     self._switches.append(switch)
-            # except Exception as e:
-            #     print('没有找到对应的网络')
-
-        return self._switches
+    # @property
+    # def getSwitches(self) -> List[Switch]:
+    #     for switch_data in self._switchesRaw:
+    #         name = switch_data.get('name', '')
+    #         network = switch_data.get('network', '')
+    #         ip = switch_data.get('ip', '')
+    #         switch = Switch(name, network, ip)
+    #         self._switches.append(switch)
+    #
+    #         # try:
+    #         #     network = self.getNetworkFromName(network)
+    #         #     ip = switch_data.get('ip', '')
+    #         #     switch = Switch(name, network, ip)
+    #         #     self._switches.append(switch)
+    #         # except Exception as e:
+    #         #     print('没有找到对应的网络')
+    #
+    #     return self._switches
 
     @property
     def getHosts(self) -> List[Host]:
@@ -177,7 +199,8 @@ class NetworkTopology:
             for host_data in hosts:
                 name = host_data.get('name', '')
                 ip = host_data.get('ip', '')
-                host = Host(name, network, ip)
+                type = host_data.get('vulType', '')
+                host = Host(name, network, ip, type)
                 self._hosts.append(host)
                 # try:
                 #     network = self.getNetworkFromName(network)

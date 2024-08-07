@@ -13,28 +13,23 @@
                 ]
     }],
 
-  "switches": [
-    {"name": "dmz_switch", "network": "dmz", "ip": "10.1.20.3"},
-    {"name": "office_switch", "network": "office", "ip": "10.2.10.3"},
-    {"name": "dev_switch", "network": "dev", "ip": "10.20.2.3"}
-  ],
-
-
   "hosts":
   {
     "dmz": [
-      {"name": "website", "ip": "10.1.20.10"},
-      {"name": "dmz_db", "ip": "10.1.20.11"},
-      {"name": "mail_server", "ip": "10.1.20.12"}
+      {"name": "service_1", "ip": "10.1.20.10", "vulType": "1"},
+      {"name": "host_1", "ip": "10.1.20.11", "vulType": "0"},
+      {"name": "host_2", "ip": "10.1.20.12", "vulType": "0"},
+      {"name": "host_3", "ip": "10.1.20.13", "vulType": "2"}
     ],
     "office": [
-      {"name": "office_pc1", "ip": "10.2.10.10"},
-      {"name": "office_pc2", "ip": "10.2.10.11"}
+      {"name": "service_1", "ip": "10.2.10.10", "vulType": "3"},
+      {"name": "host_1", "ip": "10.2.10.11", "vulType": "0"},
+      {"name": "host_2", "ip": "10.2.10.12", "vulType": "4"}
     ],
     "dev": [
-      {"name": "code_repo", "ip": "10.20.2.10"},
-      {"name": "dev_db", "ip": "10.20.2.11"},
-      {"name": "test_machine", "ip": "10.20.2.12"}
+      {"name": "service_1", "ip": "10.20.2.10", "vulType": "5"},
+      {"name": "host_1", "ip": "10.20.2.11", "vulType": "0"},
+      {"name": "host_2", "ip": "10.20.2.12", "vulType": "0"}
     ]
   }
 }
