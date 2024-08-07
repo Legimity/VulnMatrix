@@ -1,0 +1,139 @@
+version: '3.8'
+services:
+
+  rnode_router_1:
+    build: ./network/rnode_router_1
+    sysctls:
+      - net.ipv4.ip_forward=1
+    container_name: rnode_router_1
+    networks:
+        dmz:
+            ipv4_address: 10.1.20.254
+
+        office:
+            ipv4_address: 10.2.10.254
+
+        dev:
+            ipv4_address: 10.20.2.254
+
+        
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  hnode_dmz_10_1_20_10:
+    build: ./network/hnode_dmz_10_1_20_10
+    container_name: hnode_dmz_10_1_20_10
+    networks:
+      dmz:
+        ipv4_address: 10.1.20.10
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  hnode_dmz_10_1_20_11:
+    build: ./network/hnode_dmz_10_1_20_11
+    container_name: hnode_dmz_10_1_20_11
+    networks:
+      dmz:
+        ipv4_address: 10.1.20.11
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  hnode_dmz_10_1_20_12:
+    build: ./network/hnode_dmz_10_1_20_12
+    container_name: hnode_dmz_10_1_20_12
+    networks:
+      dmz:
+        ipv4_address: 10.1.20.12
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  hnode_dmz_10_1_20_13:
+    build: ./network/hnode_dmz_10_1_20_13
+    container_name: hnode_dmz_10_1_20_13
+    networks:
+      dmz:
+        ipv4_address: 10.1.20.13
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  hnode_office_10_2_10_10:
+    build: ./network/hnode_office_10_2_10_10
+    container_name: hnode_office_10_2_10_10
+    networks:
+      office:
+        ipv4_address: 10.2.10.10
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  hnode_office_10_2_10_11:
+    build: ./network/hnode_office_10_2_10_11
+    container_name: hnode_office_10_2_10_11
+    networks:
+      office:
+        ipv4_address: 10.2.10.11
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  hnode_office_10_2_10_12:
+    build: ./network/hnode_office_10_2_10_12
+    container_name: hnode_office_10_2_10_12
+    networks:
+      office:
+        ipv4_address: 10.2.10.12
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  hnode_dev_10_20_2_10:
+    build: ./network/hnode_dev_10_20_2_10
+    container_name: hnode_dev_10_20_2_10
+    networks:
+      dev:
+        ipv4_address: 10.20.2.10
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  hnode_dev_10_20_2_11:
+    build: ./network/hnode_dev_10_20_2_11
+    container_name: hnode_dev_10_20_2_11
+    networks:
+      dev:
+        ipv4_address: 10.20.2.11
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+  hnode_dev_10_20_2_12:
+    build: ./network/hnode_dev_10_20_2_12
+    container_name: hnode_dev_10_20_2_12
+    networks:
+      dev:
+        ipv4_address: 10.20.2.12
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+networks:
+  dmz:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.1.20.0/24
+  office:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.2.10.0/24
+  dev:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.20.2.0/24

@@ -11,8 +11,7 @@ RUN chmod +x /usr/local/bin/startup.sh
 ENTRYPOINT ["/usr/local/bin/startup.sh"]
 """
 
-    BaseStartupScript: str = """
-#!/bin/bash
+    BaseStartupScript: str = """#!/bin/bash
 for f in /proc/sys/net/ipv4/conf/*/rp_filter; do echo 0 > "$f"; done
 tail -f /dev/null
 """

@@ -1,8 +1,11 @@
 import os
+import sys
 from typing import List
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
+print(os.path.dirname(os.path.abspath(__file__)) + '/../')
 
-from docker.Contents import Contents
-from docker.NetworkTopology import NetworkTopology, Router, Network, Host
+from gen_network.Contents import Contents
+from gen_network.NetworkTopology import NetworkTopology, Router, Network, Host
 
 
 def ipToDir(ip: str):
@@ -143,5 +146,5 @@ def main():
     genNetwork.createDockerCompose()
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+    # main()

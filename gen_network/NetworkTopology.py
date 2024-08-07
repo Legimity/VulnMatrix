@@ -1,7 +1,7 @@
 import json
 from typing import List, Dict
 
-from docker.Contents import Contents
+from gen_network.Contents import Contents
 
 
 def ipToDir(ip: str):
