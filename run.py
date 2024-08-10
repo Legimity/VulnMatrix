@@ -16,6 +16,8 @@ import tornado.websocket
 
 # from docker_lib import Dockers_Start, Dockers_Stop, Dockers_Info
 from docker_lib import Dockers_Start, Dockers_Stop, Dockers_Info,Docker_ComposeControl
+from docker.NetworkTopology import *
+from typing import List, Dict
 from utils import Start_Get_Sysinfo
 from log.logger import logger
 from tornado.options import define, options
@@ -1025,6 +1027,94 @@ class Add_User_Handler(BaseHandler):
 
         self.render('setting.html', error = '加入用户成功！')
 
+class ViewNetworkHandler(BaseHandler):
+    '''
+    绘制网络拓扑图
+    '''
+    def getEdgeInfo(self, nodeInfo):
+        routers = nodeInfo['router']
+        switches = nodeInfo['switch']
+        hosts = nodeInfo['host']
+        edgeInfo = []
+        for router in routers:
+            routerNet = router['network'].split('_')
+            for switch in switches:
+                if switch['network'] in routerNet:
+                    edge = {'id': str(router['id']) + '_' + str(switch['id']), 'from': router['id'], 'to': switch['id']}
+                    edgeInfo.append(edge)
+                    for host in hosts:
+                        if host['network'] == switch['network']:
+                            edge = {'id': str(switch['id']) + '_' + str(host['id']), 'from': switch['id'],
+                                    'to': host['id']}
+                            edgeInfo.append(edge)
+        return edgeInfo
+
+    def getInfo(self, info):
+        nodeInfo = []
+        nodes = {}
+        i = 2
+        # key:router switch host  value: list
+        for key, value in info.items():
+            if key.find('router') != -1:
+                nodes['router'] = []
+                for router in value:
+                    node = {'id': i}
+                    i += 1
+                    node['name'] = router.getName
+                    node['label'] = router.getName
+                    node['type'] = 'router'
+                    node['network'] = ''
+                    index = 1
+                    for net in router.getNetGate:
+                        node['net{i}'.format(i=index)] = net['gateway']
+                        index += 1
+                        node['network'] += net['netName']
+                        node['network'] += '_'
+                node['network'] = node['network'][:-1]
+                nodeInfo.append(node)
+                nodes['router'].append(node)
+
+            if key.find('network') != -1:
+                nodes['switch'] = []
+                for network in value:
+                    node = {'id': i}
+                    i += 1
+                    node['name'] = 'switch' + '_' + network.getName
+                    # node['label'] = 'switch'
+                    node['type'] = 'switch'
+                    node['network'] = network.getName
+                    node['ip'] = network.getNetwork
+                    nodeInfo.append(node)
+                    nodes['switch'].append(node)
+
+            if key.find('host') != -1:
+                nodes['host'] = []
+                for host in value:
+                    node = {'id': i}
+                    i += 1
+                    node['name'] = host.getName
+                    node['label'] = host.getName
+                    node['type'] = 'target'
+                    node['network'] = host.getNetwork
+                    node['ip'] = host.getIp
+                    nodeInfo.append(node)
+                    nodes['host'].append(node)
+
+        edgeInfo = self.getEdgeInfo(nodes)
+        info = {'node': nodeInfo, 'edge': edgeInfo}
+        return info
+
+    def get(self, *args, **kwargs):
+        networkTopology = NetworkTopology()
+        networkTopology.loadConfig('network_config.json')
+        routers: List[Router] = networkTopology.getRouters
+        # switches: List[Switch] = networkTopology.getSwitches
+        hosts: List[Host] = networkTopology.getHosts
+        networks: List[Network] = networkTopology.getNetworks
+        info = {'router': routers, 'network': networks, 'host': hosts}
+        info = self.getInfo(info)
+        json_info = tornado.escape.json_encode(info)
+        self.render('view3.html', data=json_info)
 
 
 
