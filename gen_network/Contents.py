@@ -5,14 +5,29 @@ import dataclasses
 class Contents:
     BaseDockerfile: str = """\
 FROM alpine:latest
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
 RUN apk update && apk add bash iproute2 iptables
 COPY startup.sh /usr/local/bin/startup.sh
 RUN chmod +x /usr/local/bin/startup.sh
 ENTRYPOINT ["/usr/local/bin/startup.sh"]
 """
 
-    BaseStartupScript: str = """#!/bin/bash
+    BaseStartupScript1: str = """#!/bin/bash
 for f in /proc/sys/net/ipv4/conf/*/rp_filter; do echo 0 > "$f"; done
+tail -f /dev/null
+"""
+
+    BaseStartupScript2: str = """#!/bin/bash
+# 禁用反向路径过滤
+for f in /proc/sys/net/ipv4/conf/*/rp_filter; do echo 0 > "$f"; done
+# 获取主机的IP地址
+HOST_IP=$(hostname -i)
+# 将IP地址的最后一位替换为254
+GATEWAY_IP=$(echo $HOST_IP | sed 's/\.[0-9]*$/.254/')
+# 设置默认路由
+ip route del default
+ip route add default via $GATEWAY_IP
+
 tail -f /dev/null
 """
 
@@ -33,7 +48,13 @@ ENTRYPOINT ["/usr/local/bin/start_services.sh"]
 """
 
     StartupScript1: str = """#!/bin/bash
-
+# 获取主机的IP地址
+HOST_IP=$(hostname -i)
+# 将IP地址的最后一位替换为254
+GATEWAY_IP=$(echo $HOST_IP | sed 's/\.[0-9]*$/.254/')
+# 设置默认路由
+ip route del default
+ip route add default via $GATEWAY_IP
 # 启动 Apache
 service apache2 start
 
@@ -65,7 +86,13 @@ ENTRYPOINT ["/usr/local/bin/start_services.sh"]
 """
 
     StartupScript2: str = """#!/bin/bash
-
+# 获取主机的IP地址
+HOST_IP=$(hostname -i)
+# 将IP地址的最后一位替换为254
+GATEWAY_IP=$(echo $HOST_IP | sed 's/\.[0-9]*$/.254/')
+# 设置默认路由
+ip route del default
+ip route add default via $GATEWAY_IP
 # 启动 Redis
 redis-server /tmp/redis-2.8.17/redis.conf &
 
@@ -95,7 +122,13 @@ RUN chmod +x /usr/local/bin/start_services.sh
 ENTRYPOINT ["/usr/local/bin/start_services.sh"]"""
 
     StartupScript3: str = """#!/bin/bash
-
+# 获取主机的IP地址
+HOST_IP=$(hostname -i)
+# 将IP地址的最后一位替换为254
+GATEWAY_IP=$(echo $HOST_IP | sed 's/\.[0-9]*$/.254/')
+# 设置默认路由
+ip route del default
+ip route add default via $GATEWAY_IP
 # 启动 Nginx
 service nginx start
 
@@ -110,6 +143,9 @@ tail -f /dev/null"""
 
     VulDockerfile4: str = """# 基础镜像
 FROM xinzp/tiaozhanbei:v1.2
+RUN sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+RUN sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list 
+RUN apt-get install -y iproute2 iptables
 
 # 暴露端口
 EXPOSE 80 81 873
@@ -124,7 +160,13 @@ RUN chmod +x /usr/local/bin/start_services.sh
 ENTRYPOINT ["/usr/local/bin/start_services.sh"]"""
 
     StartupScript4: str = """#!/bin/bash
-
+# 获取主机的IP地址
+HOST_IP=$(hostname -i)
+# 将IP地址的最后一位替换为254
+GATEWAY_IP=$(echo $HOST_IP | sed 's/\.[0-9]*$/.254/')
+# 设置默认路由
+ip route del default
+ip route add default via $GATEWAY_IP
 # 启动 Apache
 service apache2 start
 
@@ -132,7 +174,7 @@ service apache2 start
 service mysql start
 
 # 启动 rsync
- rsync --daemon
+rsync --daemon
 
 # 保持容器运行
 tail -f /dev/null
@@ -152,7 +194,14 @@ CMD ["/bin/bash", "-c", "/usr/local/bin/startup.sh && /bin/bash"]
 
 """
 
-    StartupScript5: str = """sudo supervisord -c /etc/supervisord.conf
+    StartupScript5: str = """# 获取主机的IP地址
+HOST_IP=$(hostname -i)
+# 将IP地址的最后一位替换为254
+GATEWAY_IP=$(echo $HOST_IP | sed 's/\.[0-9]*$/.254/')
+# 设置默认路由
+ip route del default
+ip route add default via $GATEWAY_IP
+sudo supervisord -c /etc/supervisord.conf
 sudo supervisorctl start httpd
 sudo /usr/sbin/php-fpm -y /etc/php-fpm.d/www.conf
 /redis-4.0.8/src/redis-server --daemonize yes

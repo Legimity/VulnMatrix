@@ -2,7 +2,6 @@ import os
 import sys
 from typing import List
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-print(os.path.dirname(os.path.abspath(__file__)) + '/../')
 
 from gen_network.Contents import Contents
 from gen_network.NetworkTopology import NetworkTopology, Router, Network, Host
@@ -36,7 +35,7 @@ class GenNetwork:
             with open(f'{routerPath}/Dockerfile', 'w') as f:
                 f.write(Contents.BaseDockerfile)
             with open(f'{routerPath}/startup.sh', 'w') as f:
-                f.write(Contents.BaseStartupScript)
+                f.write(Contents.BaseStartupScript1)
         #
         # for switch in self.switches:
         #     switchDirName = f'switch_{switch.getNetwork}_{ipToDir(switch.getIp)}'
@@ -55,7 +54,7 @@ class GenNetwork:
             # dirName = f'network/{hostDirName}'
             if host.getType == '0':
                 host.createDockerfile(Contents.BaseDockerfile)
-                host.createStartupScript(Contents.BaseStartupScript)
+                host.createStartupScript(Contents.BaseStartupScript2)
             elif host.getType == '1':
                 host.createDockerfile(Contents.VulDockerfile1)
                 host.createStartupScript(Contents.StartupScript1)
@@ -146,5 +145,5 @@ def main():
     genNetwork.createDockerCompose()
 
 
-# if __name__ == '__main__':
-    # main()
+if __name__ == '__main__':
+    main()

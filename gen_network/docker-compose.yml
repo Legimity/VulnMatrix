@@ -24,6 +24,8 @@ services:
   hnode_dmz_10_1_20_10:
     build: ./network/hnode_dmz_10_1_20_10
     container_name: hnode_dmz_10_1_20_10
+    ports:
+      - "8081:81"
     networks:
       dmz:
         ipv4_address: 10.1.20.10
@@ -121,6 +123,19 @@ services:
     security_opt:
       - seccomp:unconfined
 
+  waf:
+    build: ./network/waf
+    container_name: waf
+    ports:
+      - "8005:8005"
+    networks:
+      dmz:
+        ipv4_address: 10.1.20.14
+    volumes:
+      - ./network/waf/nginx.conf:/usr/local/nginx/conf/nginx.conf
+    depends_on:
+      - hnode_dmz_10_1_20_10
+
 networks:
   dmz:
     driver: bridge
@@ -137,3 +152,5 @@ networks:
     ipam:
       config:
         - subnet: 10.20.2.0/24
+
+

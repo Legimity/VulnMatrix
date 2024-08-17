@@ -1,5 +1,8 @@
 # 基础镜像
 FROM xinzp/tiaozhanbei:v1.2
+RUN sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+RUN sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list 
+RUN apt-get install -y iproute2 iptables
 
 # 暴露端口
 EXPOSE 80 81 873

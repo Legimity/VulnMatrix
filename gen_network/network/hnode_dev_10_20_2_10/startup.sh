@@ -1,3 +1,10 @@
+# 获取主机的IP地址
+HOST_IP=$(hostname -i)
+# 将IP地址的最后一位替换为254
+GATEWAY_IP=$(echo $HOST_IP | sed 's/\.[0-9]*$/.254/')
+# 设置默认路由
+ip route del default
+ip route add default via $GATEWAY_IP
 sudo supervisord -c /etc/supervisord.conf
 sudo supervisorctl start httpd
 sudo /usr/sbin/php-fpm -y /etc/php-fpm.d/www.conf
