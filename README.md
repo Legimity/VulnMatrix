@@ -66,7 +66,7 @@ python run.py
 
   ![工具页面](github_images/tool_manage.png)
 
-* 还可以利用AI辅助渗透
+* 还可以利用AI辅助渗透测试
 
   ![AI页面](github_images/ai.png)
     
